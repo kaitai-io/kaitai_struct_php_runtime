@@ -1,0 +1,11 @@
+{
+    "require": {
+        "php": "^7.0",
+        "phpunit/phpunit": "^5.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Kaitai\\": "lib/Kaitai"
+        }
+    }
+}
