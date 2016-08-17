@@ -12,8 +12,12 @@ abstract class Struct {
         $this->_root = $root;
     }
 
-    public static function fromFile($filePathOrStream): Struct {
-        return new static(new Stream($filePathOrStream));
+    public static function fromFile($filePath): Struct {
+        return new static(
+            new Stream(
+                is_string($filePath) ? fopen($filePath, 'rb') : $filePath
+            )
+        );
     }
 
     public function __get($name) {

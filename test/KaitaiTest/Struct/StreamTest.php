@@ -325,16 +325,72 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
         $this->markTestIncomplete();
     }
 
-    public function testReadBytes() {
+    public function testReadBytes_Сonsistently() {
+        $handle = $this->memoryHandle();
+        fwrite($handle, "\x03\xef\xa4\xb9");
+        $stream = new Stream($handle);
+        $this->assertEquals("\x03\xef", $stream->readBytes(2));
+        $this->assertEquals("\xa4", $stream->readBytes(1));
+        $this->assertEquals("\xb9", $stream->readBytes(1));
+        $this->assertEquals("", $stream->readBytes(1));
+    }
+
+    public function testReadBytes_Seek() {
+        $handle = $this->memoryHandle();
+        fwrite($handle, "\x03\xef\xa4\xb9");
+        $stream = new Stream($handle);
+
+        $stream->seek(1);
+        $this->assertEquals("\xef\xa4", $stream->readBytes(2));
+
+        $stream->seek(2);
+        $this->assertEquals("\xa4\xb9", $stream->readBytes(2));
+
+        $stream->seek(3);
+        $this->assertEquals("\xb9", $stream->readBytes(1));
+
+        $stream->seek(3);
+        $this->assertEquals("\xb9", $stream->readBytes(232));
+    }
+
+    public function testReadBytesFull() {
+        $handle = $this->memoryHandle();
+        $bytes = "\x03\xef\xa4\xb9";
+        fwrite($handle, $bytes);
+        $stream = new Stream($handle);
+
+        $this->assertEquals($bytes, $stream->readBytesFull());
+        $this->assertEquals('', $stream->readBytesFull());
+
+        $stream->seek(0);
+        $this->assertEquals($bytes, $stream->readBytesFull());
+        $this->assertEquals('', $stream->readBytesFull());
+
+        $stream->seek(2);
+        $this->assertEquals("\xa4\xb9", $stream->readBytesFull());
+        $this->assertEquals('', $stream->readBytesFull());
+    }
+
+    public function testEnsureFixedContents() {
         $this->markTestIncomplete();
     }
 
     public function testReadStrEos() {
-        $this->markTestIncomplete();
+        $handle = $this->memoryHandle();
+        $bytes = "\x3C\x3F\x70\x68\x70"; // "<?php"
+        fwrite($handle, $bytes);
+        $stream = new Stream($handle);
+        $stream->seek(1);
+        $this->assertEquals('?php', $stream->readStrEos('utf-8'));
     }
 
     public function testReadStrByteLimit() {
-        $this->markTestIncomplete();
+        $handle = $this->memoryHandle();
+        $bytes = "\x3C\x3F\x70\x68\x70"; // "<?php"
+        fwrite($handle, $bytes);
+        $stream = new Stream($handle);
+        $stream->seek(1);
+        $this->assertEquals('?ph', $stream->readStrByteLimit(3, 'utf-8'));
     }
 
     public function testReadStrz() {
@@ -350,10 +406,6 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testProcessZlib() {
-        $this->markTestIncomplete();
-    }
-
-    public function testReadBytesFull() {
         $this->markTestIncomplete();
     }
 

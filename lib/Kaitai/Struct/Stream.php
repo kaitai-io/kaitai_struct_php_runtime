@@ -9,20 +9,14 @@ class Stream {
     const SIGN_MASK_64 = 0x800000000000; // (1 << (64 - 1));
 
     /**
-     * @param string|resource $stream
+     * @param resource $stream
      */
     public function __construct($stream) {
         if (PHP_INT_SIZE < 8) {
             throw new \RuntimeException("At least 64-bit platform is required");
         }
-        if (is_string($stream)) {
-            $this->stream = fopen($stream, 'rb');
-        } else {
-            $this->stream = $stream;
-        }
+        $this->stream = $stream;
         fseek($this->stream, 0, SEEK_SET);
-        //$size = strlen(stream_get_contents($stream));
-        //$this->size = fstat($this->stream)['size'];
     }
 
     /**************************************************************************
@@ -68,7 +62,7 @@ class Stream {
      * Read 1 byte, signed integer
      */
     public function readS1(): int {
-        return unpack("c", $this->readNBytes(1))[1];
+        return unpack("c", $this->readBytes(1))[1];
     }
     
     // ---
@@ -83,7 +77,8 @@ class Stream {
     }
 
     public function readS8be(): int {
-        $bytes = $this->readNBytes(8);
+        $bytes = $this->readBytes(8);
+        throw new \RuntimeException("Not implemented yet");
 
         // \xf-\x8
         // @TODO
@@ -113,17 +108,19 @@ class Stream {
 
     public function readS8le(): int {
         // @TODO
-/*
-unless @@big_endian
-def read_s8le
-  read_bytes(8).unpack('q')[0]
-end
-else
-def read_s8le
-  to_signed(read_u8le, SIGN_MASK_64)
-end
-end
- */
+        throw new \RuntimeException("Not implemented yet");
+
+        /*
+        unless @@big_endian
+        def read_s8le
+          read_bytes(8).unpack('q')[0]
+        end
+        else
+        def read_s8le
+          to_signed(read_u8le, SIGN_MASK_64)
+        end
+        end
+         */
     }
 
     /**************************************************************************
@@ -131,37 +128,37 @@ end
      */
 
     public function readU1(): int {
-        return unpack("C", $this->readNBytes(1))[1];
+        return unpack("C", $this->readBytes(1))[1];
     }
 
     // ---
     // 2.2.1. Big-endian
 
     public function readU2be(): int {
-        return unpack("n", $this->readNBytes(2))[1];
+        return unpack("n", $this->readBytes(2))[1];
     }
 
     public function readU4be(): int {
-        return unpack("N", $this->readNBytes(4))[1];
+        return unpack("N", $this->readBytes(4))[1];
     }
 
     public function readU8be(): int {
-        return unpack("J", $this->readNBytes(8))[1];
+        return unpack("J", $this->readBytes(8))[1];
     }
 
     // ---
     // 2.2.2. Little-endian
 
     public function readU2le(): int {
-        return unpack("v", $this->readNBytes(2))[1];
+        return unpack("v", $this->readBytes(2))[1];
     }
 
     public function readU4le(): int {
-        return unpack("V", $this->readNBytes(4))[1];
+        return unpack("V", $this->readBytes(4))[1];
     }
 
     public function readU8le(): int {
-        return unpack("P", $this->readNBytes(8))[1];
+        return unpack("P", $this->readBytes(8))[1];
     }
 
     /**************************************************************************
@@ -172,34 +169,35 @@ end
     // 3.1. Big-endian
 
     public function readF4be(): float {
-        $bytes = $this->readNBytes(4);
+        $bytes = $this->readBytes(4);
 
         //read_bytes(4).unpack('g')[0]
-
+        throw new \RuntimeException("Not implemented yet");
     }
 
     public function readF8be(): float {
-        $bytes = $this->readNBytes(8);
+        $bytes = $this->readBytes(8);
 
         //read_bytes(8).unpack('G')[0]
-
+        throw new \RuntimeException("Not implemented yet");
     }
 
     // ---
     // 3.2. Little-endian
 
     public function readF4le(): float {
-        $bytes = $this->readNBytes(4);
+        $bytes = $this->readBytes(4);
 
         //read_bytes(4).unpack('e')[0]
-
+        throw new \RuntimeException("Not implemented yet");
     }
 
     public function readF8le(): float {
-        $bytes = $this->readNBytes(8);
+        $bytes = $this->readBytes(8);
 
         //read_bytes(8).unpack('E')[0]
 
+        throw new \RuntimeException("Not implemented yet");
 
     }
 
@@ -207,30 +205,40 @@ end
      * 4. Byte arrays
      **************************************************************************/
 
-    public function readBytes(int $count)/*byte[] */ {
-
+    public function readBytes(int $numberOfBytes): string {
+        //return stream_get_contents($this->stream, $numberOfBytes);
+        return fread($this->stream, $numberOfBytes);
     }
 
-    public function readBytesFull()/*byte */ {
-
+    public function readBytesFull(): string {
+        return stream_get_contents($this->stream);
+        /*
+        $bytes = '';
+        while (!feof($this->stream)) {
+            $bytes .= fread($this->stream, 8192);
+        }
+        return $bytes;
+        */
     }
 
-    // ensure_fixed_contents??
+    public function ensureFixedContents(/*int len, byte[] expected*/) {
+        throw new \RuntimeException("Not implemented yet");
+    }
 
     /**************************************************************************
      * 5. Strings
      **************************************************************************/
 
-    public function readStrEos(string $encoding)/*string */ {
-
+    public function readStrEos(string $outputEncoding): string {
+        return $this->toEncoding($outputEncoding, $this->readBytesFull());
     }
 
-    public function readStrByteLimit(int $length, string $encoding)/*string */ {
-
+    public function readStrByteLimit(int $numberOfBytes, string $outputEncoding): string {
+        return $this->toEncoding($outputEncoding, $this->readBytes($numberOfBytes));
     }
 
-    public function readStrz(string $encoding, int $terminator, bool $includeTerminator, bool $consumeTerminator, bool $eosError) /*string */ {
-
+    public function readStrz(string $outputEncoding, int $terminator, bool $includeTerminator, bool $consumeTerminator, bool $eosError): string {
+        throw new \RuntimeException("Not implemented yet");
     }
 
     /**************************************************************************
@@ -238,24 +246,32 @@ end
      **************************************************************************/
 
     public function processXor($bytes, int $key)/*byte */ {
-
+        throw new \RuntimeException("Not implemented yet");
     }
 
     //public function processXor(byte[] value, byte[] key)/*byte */ {}
     public function processRotateLeft($bytes, int $amount, int $groupSize)/*byte */ {
-
+        throw new \RuntimeException("Not implemented yet");
     }
 
     public function processZlib($bytes) /*byte */ {
-
+        throw new \RuntimeException("Not implemented yet");
     }
 
-    protected function readNBytes(int $n): string {
-        fseek($this->stream, $this->pos(), SEEK_SET);
-        return fread($this->stream, $n);
-    }
+    /**************************************************************************
+     * Internal
+     **************************************************************************/
 
     protected function toSigned(int $x, int $mask): int {
         return ($x & ~$mask) - ($x & $mask);
+    }
+
+    protected function toEncoding(string $outputEncoding, string $bytes): string {
+        return iconv($this->defaultEncoding(), $outputEncoding, $bytes);
+    }
+
+    protected function defaultEncoding(): string {
+        //  Encoding should be a compatible superset of ASCII.
+        return 'utf-8';
     }
 }
