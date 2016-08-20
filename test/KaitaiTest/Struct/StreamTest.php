@@ -394,7 +394,38 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testReadStrz() {
-        $this->markTestIncomplete();
+        $handle = $this->memoryHandle();
+        $bytes = "\x3C\x3F\x70\x68\x70"; // "<?php"
+        fwrite($handle, $bytes);
+        $stream = new Stream($handle);
+
+        $stream->seek(1);
+        $this->assertEquals('?p', $stream->readStrz('utf-8', "\x68", false, false, false));
+        $this->assertEquals(3, $stream->pos());
+
+        $stream->seek(1);
+        $this->assertEquals('?p', $stream->readStrz('utf-8', "\x68", false, true, false));
+        $this->assertEquals(4, $stream->pos());
+
+        $stream->seek(1);
+        $this->assertEquals('?ph', $stream->readStrz('utf-8', "\x68", true, false, false));
+        $this->assertEquals(3, $stream->pos());
+
+        $stream->seek(1);
+        $this->assertEquals('?ph', $stream->readStrz('utf-8', "\x68", true, true, false));
+        $this->assertEquals(4, $stream->pos());
+
+        $stream->seek(0);
+        $this->assertEquals('<?php', $stream->readStrz('utf-8', '', false, false, false));
+
+        $stream->seek(0);
+        $terminator = 'o';
+        try {
+            $stream->readStrz('utf-8', $terminator, false, false, true);
+            $this->fail();
+        } catch (\RuntimeException $e) {
+            $this->assertEquals("End of stream reached, but no terminator '$terminator' found", $e->getMessage());
+        }
     }
 
     public function testProcessXor() {
@@ -418,19 +449,19 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertEquals($fileSize, $stream->size());
         $this->assertEquals(0, $stream->pos());
-        $this->assertFalse($stream->eof());
+        $this->assertFalse($stream->isEof());
 
         $pos = 123;
         $this->assertNull($stream->seek($pos));
         $this->assertEquals($pos, $stream->pos());
-        $this->assertFalse($stream->eof());
+        $this->assertFalse($stream->isEof());
 
         $this->assertSeekCallFailsForPos($stream, $fileSize);
         $this->assertSeekCallFailsForPos($stream, $fileSize + 3);
 
         $pos = $fileSize - 1;
         $this->assertNull($stream->seek($pos));
-        $this->assertFalse($stream->eof());
+        $this->assertFalse($stream->isEof());
         $this->assertEquals($pos, $stream->pos());
     }
 

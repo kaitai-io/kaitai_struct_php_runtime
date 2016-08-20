@@ -23,7 +23,7 @@ class Stream {
      * 1. Stream positioning
      **************************************************************************/
 
-    public function eof(): bool {
+    public function isEof(): bool {
         return feof($this->stream);
     }
 
@@ -237,8 +237,28 @@ class Stream {
         return $this->toEncoding($outputEncoding, $this->readBytes($numberOfBytes));
     }
 
-    public function readStrz(string $outputEncoding, int $terminator, bool $includeTerminator, bool $consumeTerminator, bool $eosError): string {
-        throw new \RuntimeException("Not implemented yet");
+    public function readStrz(string $outputEncoding, string $terminator, bool $includeTerminator, bool $consumeTerminator, bool $eosError): string {
+        $bytes = '';
+        while (true) {
+            if ($this->isEof()) {
+                if ($eosError) {
+                    throw new \RuntimeException("End of stream reached, but no terminator '$terminator' found");
+                }
+                break;
+            }
+            $byte = $this->readBytes(1);
+            if ($byte === $terminator) {
+                if ($includeTerminator) {
+                    $bytes .= $byte;
+                }
+                if (!$consumeTerminator) {
+                    $this->seek($this->pos() - 1);
+                }
+                break;
+            }
+            $bytes .= $byte;
+        }
+        return $this->toEncoding($outputEncoding, $bytes);
     }
 
     /**************************************************************************
