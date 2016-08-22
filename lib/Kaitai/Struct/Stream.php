@@ -221,8 +221,13 @@ class Stream {
         */
     }
 
-    public function ensureFixedContents(/*int len, byte[] expected*/) {
-        throw new \RuntimeException("Not implemented yet");
+    public function ensureFixedContents(int $length, string $expectedBytes): string {
+        $bytes = $this->readBytes($length);
+        if ($bytes !== $expectedBytes) {
+            // @TODO: print expected and actual bytes
+            throw new \RuntimeException("Expected bytes are not equal to actual bytes");
+        }
+        return $bytes;
     }
 
     /**************************************************************************
@@ -230,11 +235,11 @@ class Stream {
      **************************************************************************/
 
     public function readStrEos(string $outputEncoding): string {
-        return $this->toEncoding($outputEncoding, $this->readBytesFull());
+        return $this->bytesToEncoding($this->readBytesFull(), $outputEncoding);
     }
 
     public function readStrByteLimit(int $numberOfBytes, string $outputEncoding): string {
-        return $this->toEncoding($outputEncoding, $this->readBytes($numberOfBytes));
+        return $this->bytesToEncoding($this->readBytes($numberOfBytes), $outputEncoding);
     }
 
     public function readStrz(string $outputEncoding, string $terminator, bool $includeTerminator, bool $consumeTerminator, bool $eosError): string {
@@ -258,20 +263,64 @@ class Stream {
             }
             $bytes .= $byte;
         }
-        return $this->toEncoding($outputEncoding, $bytes);
+        return $this->bytesToEncoding($bytes, $outputEncoding);
     }
 
     /**************************************************************************
      * 6. Byte array processing
      **************************************************************************/
 
-    public function processXor($bytes, int $key)/*byte */ {
-        throw new \RuntimeException("Not implemented yet");
+    /**
+     * @param string $bytes
+     * @param string|int $key
+     * @return string
+     */
+    public function processXorOne(string $bytes, $key): string {
+        if (is_string($key)) {
+            // unsigned integer
+            $key = unpack("C", $key)[1];
+        }
+        $xored = '';
+        for ($i = 0, $n = strlen($bytes); $i < $n; $i++) {
+            $xored .= chr(unpack("C", $bytes[$i])[1] ^ $key);
+        }
+        return $xored;
     }
 
-    //public function processXor(byte[] value, byte[] key)/*byte */ {}
+    public function processXorMany(string $bytes, string $key): string {
+        $keyLength = strlen($key);
+        $xored = '';
+        for ($i = 0, $j = 0, $n = strlen($bytes); $i < $n; $i++, $j = ($j + 1) % $keyLength) {
+            $xored .= chr(unpack("C", $bytes[$i])[1] ^ unpack("C", $key[$j])[1]);
+        }
+        return $xored;
+    }
+
     public function processRotateLeft($bytes, int $amount, int $groupSize)/*byte */ {
         throw new \RuntimeException("Not implemented yet");
+/*
+public byte[] ProcessRotateLeft(byte[] data, int amount, int groupSize)
+{
+    if (amount > 7 || amount < -7) throw new ArgumentException("Rotation of more than 7 cannot be performed.", nameof(amount));
+    if (amount < 0) amount += 8; // Rotation of -2 is the same as rotation of +6
+
+    var r = new byte[data.Length];
+    switch (groupSize)
+    {
+        case 1:
+            for (var i = 0; i < data.Length; i++)
+            {
+                var bits = data[i];
+                // http://stackoverflow.com/a/812039
+                r[i] = (byte) ((bits << amount) | (bits >> (8 - amount)));
+            }
+            break;
+        default:
+            throw new NotImplementedException($"Unable to rotate a group of {groupSize} bytes yet");
+    }
+    return r;
+}
+ */
     }
 
     public function processZlib($bytes) /*byte */ {
@@ -286,7 +335,7 @@ class Stream {
         return ($x & ~$mask) - ($x & $mask);
     }
 
-    protected function toEncoding(string $outputEncoding, string $bytes): string {
+    protected function bytesToEncoding(string $bytes, string $outputEncoding): string {
         return iconv($this->defaultEncoding(), $outputEncoding, $bytes);
     }
 

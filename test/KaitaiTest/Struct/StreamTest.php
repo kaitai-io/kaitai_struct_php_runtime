@@ -21,9 +21,9 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testS1() {
-        $handle = $this->memoryHandle();
-        fwrite($handle, "\x80\xFF\x00\x7F\xFA\x0F\xAD\xE5\x22\x11");
-        $stream = new Stream($handle);
+        $bytes = "\x80\xff\x00\x7f\xfa\x0f\xad\xe5\x22\x11";
+        $stream = $this->streamWithBytes($bytes);
+
         $this->assertEquals(-128, $stream->readS1());
 
         $stream->seek(1);
@@ -55,15 +55,12 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testS2be() {
-        $handle = $this->memoryHandle();
-        fwrite(
-            $handle,
-            "\x80\x00"
+        $bytes = "\x80\x00"
             . "\xff\xff"
             . "\x00\x00"
-            . "\x7f\xff"
-        );
-        $stream = new Stream($handle);
+            . "\x7f\xff";
+        $stream = $this->streamWithBytes($bytes);
+
         $this->assertEquals(-32768, $stream->readS2be());
 
         $stream->seek(2);
@@ -77,16 +74,13 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testS4be() {
-        $handle = $this->memoryHandle();
-        fwrite(
-            $handle,
-            "\x80\x00\x00\x00"
+        $bytes = "\x80\x00\x00\x00"
             . "\xff\xff\xff\xff"
             . "\x00\x00\x00\x00"
-            . "\x7f\xff\xff\xff"
-        );
+            . "\x7f\xff\xff\xff";
 
-        $stream = new Stream($handle);
+        $stream = $this->streamWithBytes($bytes);
+
         $this->assertEquals(-2147483648, $stream->readS4be());
 
         $stream->seek(4);
@@ -119,15 +113,12 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testS2le() {
-        $handle = $this->memoryHandle();
-        fwrite(
-            $handle,
-            "\x00\x80"
+        $bytes = "\x00\x80"
             . "\xff\xff"
             . "\x00\x00"
-            . "\xff\x7f"
-        );
-        $stream = new Stream($handle);
+            . "\xff\x7f";
+        $stream = $this->streamWithBytes($bytes);
+
         $this->assertEquals(-32768, $stream->readS2le());
 
         $stream->seek(2);
@@ -141,16 +132,12 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testS4le() {
-        $handle = $this->memoryHandle();
-        fwrite(
-            $handle,
-            "\x00\x00\x00\x80"
+        $bytes = "\x00\x00\x00\x80"
             . "\xff\xff\xff\xff"
             . "\x00\x00\x00\x00"
-            . "\xff\xff\xff\x7f"
-        );
+            . "\xff\xff\xff\x7f";
+        $stream = $this->streamWithBytes($bytes);
 
-        $stream = new Stream($handle);
         $this->assertEquals(-2147483648, $stream->readS4le());
 
         $stream->seek(4);
@@ -168,9 +155,8 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testU1() {
-        $handle = $this->memoryHandle();
-        fwrite($handle, "\x80\xFF\x00\x7F\xFA\x0F\xAD\xE5\x22\x11");
-        $stream = new Stream($handle);
+        $bytes = "\x80\xff\x00\x7f\xfa\x0f\xad\xe5\x22\x11";
+        $stream = $this->streamWithBytes($bytes);
         $this->assertEquals(128, $stream->readU1());
 
         $stream->seek(1);
@@ -222,10 +208,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
      * @dataProvider dataForU2_LeBe
      */
     public function testU2_LeBe(string $bytes, string $fn) {
-        $handle = $this->memoryHandle();
-        fwrite($handle, $bytes);
-
-        $stream = new Stream($handle);
+        $stream = $this->streamWithBytes($bytes);
         $read = [$stream, $fn];
         $this->assertEquals(0, call_user_func($read));
 
@@ -257,10 +240,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
      * @dataProvider dataForU4_LeBe
      */
     public function testU4_LeBe(string $bytes, string $fn) {
-        $handle = $this->memoryHandle();
-        fwrite($handle, $bytes);
-
-        $stream = new Stream($handle);
+        $stream = $this->streamWithBytes($bytes);
         $read = [$stream, $fn];
         $this->assertEquals(0, call_user_func($read));
 
@@ -292,11 +272,9 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
      * @dataProvider dataForU8_LeBe
      */
     public function testU8_LeBe(string $bytes, string $fn) {
-        $handle = $this->memoryHandle();
-        fwrite($handle, $bytes);
-
-        $stream = new Stream($handle);
+        $stream = $this->streamWithBytes($bytes);
         $read = [$stream, $fn];
+
         $this->assertEquals(0, call_user_func($read));
 
         $stream->seek(8);
@@ -326,9 +304,8 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testReadBytes_Сonsistently() {
-        $handle = $this->memoryHandle();
-        fwrite($handle, "\x03\xef\xa4\xb9");
-        $stream = new Stream($handle);
+        $bytes = "\x03\xef\xa4\xb9";
+        $stream = $this->streamWithBytes($bytes);
         $this->assertEquals("\x03\xef", $stream->readBytes(2));
         $this->assertEquals("\xa4", $stream->readBytes(1));
         $this->assertEquals("\xb9", $stream->readBytes(1));
@@ -336,9 +313,8 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testReadBytes_Seek() {
-        $handle = $this->memoryHandle();
-        fwrite($handle, "\x03\xef\xa4\xb9");
-        $stream = new Stream($handle);
+        $bytes = "\x03\xef\xa4\xb9";
+        $stream = $this->streamWithBytes($bytes);
 
         $stream->seek(1);
         $this->assertEquals("\xef\xa4", $stream->readBytes(2));
@@ -354,10 +330,8 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testReadBytesFull() {
-        $handle = $this->memoryHandle();
         $bytes = "\x03\xef\xa4\xb9";
-        fwrite($handle, $bytes);
-        $stream = new Stream($handle);
+        $stream = $this->streamWithBytes($bytes);
 
         $this->assertEquals($bytes, $stream->readBytesFull());
         $this->assertEquals('', $stream->readBytesFull());
@@ -372,32 +346,35 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testEnsureFixedContents() {
-        $this->markTestIncomplete();
+        $bytes = "\x3c\x3f\x70\x68\x70"; // "<?php"
+        $stream = $this->streamWithBytes($bytes);
+        $this->assertEquals($bytes, $stream->ensureFixedContents(strlen($bytes), $bytes));
+
+        try {
+            $stream->ensureFixedContents(3, $bytes);
+            $this->fail();
+        } catch (\RuntimeException $e) {
+            $this->assertEquals('Expected bytes are not equal to actual bytes', $e->getMessage());
+        }
     }
 
     public function testReadStrEos() {
-        $handle = $this->memoryHandle();
-        $bytes = "\x3C\x3F\x70\x68\x70"; // "<?php"
-        fwrite($handle, $bytes);
-        $stream = new Stream($handle);
+        $bytes = "\x3c\x3f\x70\x68\x70"; // "<?php"
+        $stream = $this->streamWithBytes($bytes);
         $stream->seek(1);
         $this->assertEquals('?php', $stream->readStrEos('utf-8'));
     }
 
     public function testReadStrByteLimit() {
-        $handle = $this->memoryHandle();
-        $bytes = "\x3C\x3F\x70\x68\x70"; // "<?php"
-        fwrite($handle, $bytes);
-        $stream = new Stream($handle);
+        $bytes = "\x3c\x3f\x70\x68\x70"; // "<?php"
+        $stream = $this->streamWithBytes($bytes);
         $stream->seek(1);
         $this->assertEquals('?ph', $stream->readStrByteLimit(3, 'utf-8'));
     }
 
     public function testReadStrz() {
-        $handle = $this->memoryHandle();
-        $bytes = "\x3C\x3F\x70\x68\x70"; // "<?php"
-        fwrite($handle, $bytes);
-        $stream = new Stream($handle);
+        $bytes = "\x3c\x3f\x70\x68\x70"; // "<?php"
+        $stream = $this->streamWithBytes($bytes);
 
         $stream->seek(1);
         $this->assertEquals('?p', $stream->readStrz('utf-8', "\x68", false, false, false));
@@ -415,21 +392,39 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals('?ph', $stream->readStrz('utf-8', "\x68", true, true, false));
         $this->assertEquals(4, $stream->pos());
 
-        $stream->seek(0);
-        $this->assertEquals('<?php', $stream->readStrz('utf-8', '', false, false, false));
+        $terminator = 'o';
 
         $stream->seek(0);
-        $terminator = 'o';
+        $this->assertEquals('<?php', $stream->readStrz('utf-8', $terminator, false, false, false));
+        $this->assertEquals(strlen($bytes), $stream->pos());
+
+        $stream->seek(0);
         try {
             $stream->readStrz('utf-8', $terminator, false, false, true);
             $this->fail();
         } catch (\RuntimeException $e) {
             $this->assertEquals("End of stream reached, but no terminator '$terminator' found", $e->getMessage());
+            $this->assertEquals(strlen($bytes), $stream->pos());
         }
     }
 
-    public function testProcessXor() {
-        $this->markTestIncomplete();
+    public function testProcessXorOne() {
+        $bytes = "\xab\x48\xf1\x04";
+        $stream = $this->streamWithBytes($bytes);
+
+        $xored = $stream->processXorOne($bytes, "\x3f"); // 63 int
+        $this->assertEquals("\x94\x77\xce\x3b", $xored);
+
+        $xored = $stream->processXorOne($bytes, 63);
+        $this->assertEquals("\x94\x77\xce\x3b", $xored);
+    }
+
+    public function testProcessXorMany() {
+        $bytes = "\xab\x48\xf1\x04";
+        $stream = $this->streamWithBytes($bytes);
+        $key = "\x3f\x2d\xa5";
+        $xored = $stream->processXorMany($bytes, $key);
+        $this->assertEquals("\x94\x65\x54\x3b", $xored);
     }
 
     public function testProcessRotateLeft() {
@@ -472,5 +467,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
         } catch (\RuntimeException $e) {
             $this->assertEquals("The position must be < size of the stream", $e->getMessage());
         }
+    }
+
+    private function streamWithBytes(string $bytes) {
+        $handle = $this->memoryHandle();
+        fwrite($handle, $bytes);
+        return new Stream($handle);
     }
 }
