@@ -409,8 +409,9 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testProcessXorOne() {
+        $stream = $this->stream();
+
         $bytes = "\xab\x48\xf1\x04";
-        $stream = $this->streamWithBytes($bytes);
 
         $xored = $stream->processXorOne($bytes, "\x3f"); // 63 int
         $this->assertEquals("\x94\x77\xce\x3b", $xored);
@@ -420,19 +421,26 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testProcessXorMany() {
+        $stream = $this->stream();
         $bytes = "\xab\x48\xf1\x04";
-        $stream = $this->streamWithBytes($bytes);
         $key = "\x3f\x2d\xa5";
         $xored = $stream->processXorMany($bytes, $key);
         $this->assertEquals("\x94\x65\x54\x3b", $xored);
     }
 
     public function testProcessRotateLeft() {
-        $this->markTestIncomplete();
+        $stream = $this->stream();
+        $bytes = "\x17\x22\xc9\x04\x06\x13";
+        $rotated = $stream->processRotateLeft($bytes, 3, 1);
+        $this->assertEquals("\xb8\x11\x4e\x20\x30\x98", $rotated);
     }
 
     public function testProcessZlib() {
-        $this->markTestIncomplete();
+        $stream = $this->stream();
+        $string = "Compress me";
+        $compressed = gzcompress($string);
+        $uncompressed = $stream->processZlib($compressed);
+        $this->assertEquals($string, $uncompressed);
     }
 
     private function memoryHandle() {
@@ -472,6 +480,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
     private function streamWithBytes(string $bytes) {
         $handle = $this->memoryHandle();
         fwrite($handle, $bytes);
+        return new Stream($handle);
+    }
+
+    private function stream() {
+        $handle = $this->memoryHandle();
         return new Stream($handle);
     }
 }

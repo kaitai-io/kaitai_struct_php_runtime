@@ -275,63 +275,53 @@ class Stream {
      * @param string|int $key
      * @return string
      */
-    public function processXorOne(string $bytes, $key): string {
+    public static function processXorOne(string $bytes, $key): string {
         if (is_string($key)) {
-            // unsigned integer
-            $key = unpack("C", $key)[1];
+            $key = self::strByteToUint($key);
         }
         $xored = '';
         for ($i = 0, $n = strlen($bytes); $i < $n; $i++) {
-            $xored .= chr(unpack("C", $bytes[$i])[1] ^ $key);
+            $xored .= chr(self::strByteToUint($bytes[$i]) ^ $key);
         }
         return $xored;
     }
 
-    public function processXorMany(string $bytes, string $key): string {
+    public static function processXorMany(string $bytes, string $key): string {
         $keyLength = strlen($key);
         $xored = '';
         for ($i = 0, $j = 0, $n = strlen($bytes); $i < $n; $i++, $j = ($j + 1) % $keyLength) {
-            $xored .= chr(unpack("C", $bytes[$i])[1] ^ unpack("C", $key[$j])[1]);
+            $xored .= chr(self::strByteToUint($bytes[$i]) ^ self::strByteToUint($key[$j]));
         }
         return $xored;
     }
 
-    public function processRotateLeft($bytes, int $amount, int $groupSize)/*byte */ {
-        throw new \RuntimeException("Not implemented yet");
-/*
-public byte[] ProcessRotateLeft(byte[] data, int amount, int groupSize)
-{
-    if (amount > 7 || amount < -7) throw new ArgumentException("Rotation of more than 7 cannot be performed.", nameof(amount));
-    if (amount < 0) amount += 8; // Rotation of -2 is the same as rotation of +6
-
-    var r = new byte[data.Length];
-    switch (groupSize)
-    {
-        case 1:
-            for (var i = 0; i < data.Length; i++)
-            {
-                var bits = data[i];
-                // http://stackoverflow.com/a/812039
-                r[i] = (byte) ((bits << amount) | (bits >> (8 - amount)));
-            }
-            break;
-        default:
-            throw new NotImplementedException($"Unable to rotate a group of {groupSize} bytes yet");
-    }
-    return r;
-}
- */
+    public static function processRotateLeft(string $bytes, int $amount, int $groupSize): string {
+        if ($groupSize !== 1) {
+            throw new \RuntimeException("Unable to rotate group of $groupSize bytes yet");
+        }
+        $rotated = '';
+        for ($i = 0, $n = strlen($bytes); $i < $n; $i++) {
+            $byte = self::strByteToUint($bytes[$i]);
+            $rotated .= chr(($byte << $amount) | ($byte >> (8 - $amount)));
+        }
+        return $rotated;
     }
 
-    public function processZlib($bytes) /*byte */ {
-        throw new \RuntimeException("Not implemented yet");
+    public static function processZlib(string $bytes): string {
+        /*
+        $cmf = self::strByteToUint($bytes[0]);
+        if (($cmf & 0x0f) !== 0x08) {
+            throw new \RuntimeException("Only the DEFLATE algorithm is supported for zlib data");
+        }
+        */
+        return gzuncompress($bytes);
     }
 
     /**************************************************************************
      * Internal
      **************************************************************************/
 
-    protected function toSigned(int $x, int $mask): int {
+    protected static function toSigned(int $x, int $mask): int {
         return ($x & ~$mask) - ($x & $mask);
     }
 
@@ -342,5 +332,10 @@ public byte[] ProcessRotateLeft(byte[] data, int amount, int groupSize)
     protected function defaultEncoding(): string {
         //  Encoding should be a compatible superset of ASCII.
         return 'utf-8';
+    }
+    
+    private static function strByteToUint(string $byte): int {
+        // May be just ord()??
+        return unpack("C", $byte)[1];
     }
 }
