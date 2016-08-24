@@ -331,7 +331,13 @@ class Stream {
             throw new \RuntimeException("Only the DEFLATE algorithm is supported for zlib data");
         }
         */
-        return gzuncompress($bytes);
+        $uncompressed = @gzuncompress($bytes);
+        if (false === $uncompressed) {
+            $error = error_get_last();
+            error_clear_last();
+            throw new \RuntimeException($error['message']);
+        }
+        return $uncompressed;
     }
 
     /**************************************************************************
