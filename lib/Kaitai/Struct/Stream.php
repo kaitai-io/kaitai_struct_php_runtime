@@ -256,8 +256,10 @@ class Stream {
         return $this->bytesToEncoding($this->readBytes($numberOfBytes), $outputEncoding);
     }
 
-    public function readStrz(string $outputEncoding, int $terminator, bool $includeTerminator, bool $consumeTerminator, bool $eosError): string {
-        $termStr = chr($terminator);
+    public function readStrz(string $outputEncoding, $terminator, bool $includeTerminator, bool $consumeTerminator, bool $eosError): string {
+        if (is_int($terminator)) {
+            $terminator = chr($terminator);
+        }
         $bytes = '';
         while (true) {
             if ($this->isEof()) {
@@ -267,7 +269,7 @@ class Stream {
                 break;
             }
             $byte = $this->readBytes(1);
-            if ($byte === $termStr) {
+            if ($byte === $terminator) {
                 if ($includeTerminator) {
                     $bytes .= $byte;
                 }
