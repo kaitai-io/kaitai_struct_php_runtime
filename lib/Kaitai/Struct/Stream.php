@@ -29,15 +29,15 @@ class Stream {
         // past the EOF first" => "set EOF flag on stream" => "eof returns true".
         // So, we'll have to emulate the same "one byte lookup" pattern from C++.
 
-        if (fgetc($this->stream) === FALSE) {
+        if (fgetc($this->stream) === false) {
             // reached EOF
-            return TRUE;
+            return true;
         } else {
             // restore stream position, 1 byte back
             if (fseek($this->stream, -1, SEEK_CUR) !== 0) {
                 throw new \RuntimeException("Unable to roll back after reading a byte in isEof");
             }
-            return FALSE;
+            return false;
         }
     }
 
