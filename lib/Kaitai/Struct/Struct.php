@@ -21,8 +21,8 @@ abstract class Struct {
     }
 
     public function __get($name) {
-        if ($name[0] !== '_' && property_exists($this, $name)) {
-            return $this->$name;
+        if ($name[0] !== '_' && method_exists($this, $name)) {
+            return $this->$name();
         }
         throw new \RuntimeException("Cannot access the property '" . get_class($this) . '::' . $name . "'");
     }
