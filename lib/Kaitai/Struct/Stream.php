@@ -9,13 +9,18 @@ class Stream {
     const SIGN_MASK_64 = 0x800000000000; // (1 << (64 - 1));
 
     /**
-     * @param resource $stream
+     * @param resource|string $stream
      */
     public function __construct($stream) {
         if (PHP_INT_SIZE < 8) {
             throw new \RuntimeException("At least 64-bit platform is required");
         }
-        $this->stream = $stream;
+        if (is_string($stream)) {
+            $this->stream = fopen('php://memory', 'r+b');
+            fwrite($this->stream, $stream);
+        } else {
+            $this->stream = $stream;
+        }
         fseek($this->stream, 0, SEEK_SET);
     }
 
@@ -356,7 +361,7 @@ class Stream {
         //  Encoding should be a compatible superset of ASCII.
         return 'utf-8';
     }
-    
+
     private static function strByteToUint(string $byte): int {
         // May be just ord()??
         return unpack("C", $byte)[1];

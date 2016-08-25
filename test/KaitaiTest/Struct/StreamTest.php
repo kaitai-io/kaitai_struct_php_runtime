@@ -20,9 +20,14 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
         $this->checkStreamPositioning($handle, $fileSize);
     }
 
+    public function testStreamPositioning_String() {
+        $s = str_repeat('abc', 200);
+        $this->checkStreamPositioning($s, strlen($s));
+    }
+
     public function testS1() {
         $bytes = "\x80\xff\x00\x7f\xfa\x0f\xad\xe5\x22\x11";
-        $stream = $this->streamWithBytes($bytes);
+        $stream = new Stream($bytes);
 
         $this->assertEquals(-128, $stream->readS1());
 
@@ -59,7 +64,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
             . "\xff\xff"
             . "\x00\x00"
             . "\x7f\xff";
-        $stream = $this->streamWithBytes($bytes);
+        $stream = new Stream($bytes);
 
         $this->assertEquals(-32768, $stream->readS2be());
 
@@ -79,7 +84,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
             . "\x00\x00\x00\x00"
             . "\x7f\xff\xff\xff";
 
-        $stream = $this->streamWithBytes($bytes);
+        $stream = new Stream($bytes);
 
         $this->assertEquals(-2147483648, $stream->readS4be());
 
@@ -117,7 +122,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
             . "\xff\xff"
             . "\x00\x00"
             . "\xff\x7f";
-        $stream = $this->streamWithBytes($bytes);
+        $stream = new Stream($bytes);
 
         $this->assertEquals(-32768, $stream->readS2le());
 
@@ -136,7 +141,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
             . "\xff\xff\xff\xff"
             . "\x00\x00\x00\x00"
             . "\xff\xff\xff\x7f";
-        $stream = $this->streamWithBytes($bytes);
+        $stream = new Stream($bytes);
 
         $this->assertEquals(-2147483648, $stream->readS4le());
 
@@ -156,7 +161,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
 
     public function testU1() {
         $bytes = "\x80\xff\x00\x7f\xfa\x0f\xad\xe5\x22\x11";
-        $stream = $this->streamWithBytes($bytes);
+        $stream = new Stream($bytes);
         $this->assertEquals(128, $stream->readU1());
 
         $stream->seek(1);
@@ -208,7 +213,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
      * @dataProvider dataForU2_LeBe
      */
     public function testU2_LeBe(string $bytes, string $fn) {
-        $stream = $this->streamWithBytes($bytes);
+        $stream = new Stream($bytes);
         $read = [$stream, $fn];
         $this->assertEquals(0, call_user_func($read));
 
@@ -240,7 +245,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
      * @dataProvider dataForU4_LeBe
      */
     public function testU4_LeBe(string $bytes, string $fn) {
-        $stream = $this->streamWithBytes($bytes);
+        $stream = new Stream($bytes);
         $read = [$stream, $fn];
         $this->assertEquals(0, call_user_func($read));
 
@@ -272,7 +277,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
      * @dataProvider dataForU8_LeBe
      */
     public function testU8_LeBe(string $bytes, string $fn) {
-        $stream = $this->streamWithBytes($bytes);
+        $stream = new Stream($bytes);
         $read = [$stream, $fn];
 
         $this->assertEquals(0, call_user_func($read));
@@ -305,7 +310,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
 
     public function testReadBytes_Сonsistently() {
         $bytes = "\x03\xef\xa4\xb9";
-        $stream = $this->streamWithBytes($bytes);
+        $stream = new Stream($bytes);
         $this->assertEquals("\x03\xef", $stream->readBytes(2));
         $this->assertEquals("\xa4", $stream->readBytes(1));
         $this->assertEquals("\xb9", $stream->readBytes(1));
@@ -314,7 +319,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
 
     public function testReadBytes_Seek() {
         $bytes = "\x03\xef\xa4\xb9";
-        $stream = $this->streamWithBytes($bytes);
+        $stream = new Stream($bytes);
 
         $stream->seek(1);
         $this->assertEquals("\xef\xa4", $stream->readBytes(2));
@@ -331,7 +336,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
 
     public function testReadBytesFull() {
         $bytes = "\x03\xef\xa4\xb9";
-        $stream = $this->streamWithBytes($bytes);
+        $stream = new Stream($bytes);
 
         $this->assertEquals($bytes, $stream->readBytesFull());
         $this->assertEquals('', $stream->readBytesFull());
@@ -347,7 +352,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
 
     public function testEnsureFixedContents() {
         $bytes = "\x3c\x3f\x70\x68\x70"; // "<?php"
-        $stream = $this->streamWithBytes($bytes);
+        $stream = new Stream($bytes);
         $this->assertEquals($bytes, $stream->ensureFixedContents(strlen($bytes), $bytes));
 
         try {
@@ -360,21 +365,21 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
 
     public function testReadStrEos() {
         $bytes = "\x3c\x3f\x70\x68\x70"; // "<?php"
-        $stream = $this->streamWithBytes($bytes);
+        $stream = new Stream($bytes);
         $stream->seek(1);
         $this->assertEquals('?php', $stream->readStrEos('utf-8'));
     }
 
     public function testReadStrByteLimit() {
         $bytes = "\x3c\x3f\x70\x68\x70"; // "<?php"
-        $stream = $this->streamWithBytes($bytes);
+        $stream = new Stream($bytes);
         $stream->seek(1);
         $this->assertEquals('?ph', $stream->readStrByteLimit(3, 'utf-8'));
     }
 
     public function testReadStrz() {
         $bytes = "\x3c\x3f\x70\x68\x70"; // "<?php"
-        $stream = $this->streamWithBytes($bytes);
+        $stream = new Stream($bytes);
 
         $stream->seek(1);
         $this->assertEquals('?p', $stream->readStrz('utf-8', "\x68", false, false, false));
@@ -475,12 +480,6 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
         } catch (\RuntimeException $e) {
             $this->assertEquals("The position must be < size of the stream", $e->getMessage());
         }
-    }
-
-    private function streamWithBytes(string $bytes) {
-        $handle = $this->memoryHandle();
-        fwrite($handle, $bytes);
-        return new Stream($handle);
     }
 
     private function stream() {
