@@ -226,7 +226,12 @@ class Stream {
 
     public function readBytes(int $numberOfBytes): string {
         //return stream_get_contents($this->stream, $numberOfBytes);
-        return fread($this->stream, $numberOfBytes);
+        $bytes = fread($this->stream, $numberOfBytes);
+        $n = strlen($bytes);
+        if ($n < $numberOfBytes) {
+            throw new \RuntimeException("Requested $numberOfBytes bytes, but got only $n bytes");
+        }
+        return $bytes;
     }
 
     public function readBytesFull(): string {
