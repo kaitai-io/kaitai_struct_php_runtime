@@ -314,7 +314,6 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals("\x03\xef", $stream->readBytes(2));
         $this->assertEquals("\xa4", $stream->readBytes(1));
         $this->assertEquals("\xb9", $stream->readBytes(1));
-        $this->assertEquals("", $stream->readBytes(1));
     }
 
     public function testReadBytes_Seek() {
@@ -324,14 +323,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
         $stream->seek(1);
         $this->assertEquals("\xef\xa4", $stream->readBytes(2));
 
-        $stream->seek(2);
-        $this->assertEquals("\xa4\xb9", $stream->readBytes(2));
+        $stream->seek(0);
+        $this->assertEquals("\x03\xef", $stream->readBytes(2));
 
         $stream->seek(3);
         $this->assertEquals("\xb9", $stream->readBytes(1));
-
-        $stream->seek(3);
-        $this->assertEquals("\xb9", $stream->readBytes(232));
     }
 
     public function testReadBytesFull() {
@@ -353,13 +349,16 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
     public function testEnsureFixedContents() {
         $bytes = "\x3c\x3f\x70\x68\x70"; // "<?php"
         $stream = new Stream($bytes);
-        $this->assertEquals($bytes, $stream->ensureFixedContents(strlen($bytes), $bytes));
+        $this->assertEquals(
+            $bytes,
+            $stream->ensureFixedContents(strlen($bytes), $bytes)
+        );
 
         try {
             $stream->ensureFixedContents(3, $bytes);
             $this->fail();
         } catch (\RuntimeException $e) {
-            $this->assertEquals('Expected bytes are not equal to actual bytes', $e->getMessage());
+            $this->assertEquals('Requested 3 bytes, but got only 0 bytes', $e->getMessage());
         }
     }
 
