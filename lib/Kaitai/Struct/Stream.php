@@ -64,8 +64,6 @@ class Stream {
     }
 
     public function size(): int {
-        // strlen(stream_get_contents($stream))
-        // return $this->size;
         return fstat($this->stream)['size'];
     }
 
@@ -97,21 +95,9 @@ class Stream {
 
     public function readS8be(): int {
         $bytes = $this->readBytes(8);
-        throw new \RuntimeException("Not implemented yet");
-
-        // \xf-\x8
-        // @TODO
-
-        /*
-        if ($bytes === "\xff\xff\xff\xff\xff\xff\xff\xff") {
-            return -1;
-        }
-        $x = $this->readU8be();
-         if ($x < 0) {
-            throw new \OutOfBoundsException();
-        }
-        return $this->toSigned($x, self::SIGN_MASK_64);
-        */
+        $highDw = unpack('N', substr($bytes, 0, 4))[1];
+        $lowDw = unpack('N', substr($bytes, 4))[1];
+        return ($highDw << 32) + $lowDw;
     }
     
     // --
@@ -126,20 +112,10 @@ class Stream {
     }
 
     public function readS8le(): int {
-        // @TODO
-        throw new \RuntimeException("Not implemented yet");
-
-        /*
-        unless @@big_endian
-        def read_s8le
-          read_bytes(8).unpack('q')[0]
-        end
-        else
-        def read_s8le
-          to_signed(read_u8le, SIGN_MASK_64)
-        end
-        end
-         */
+        $bytes = $this->readBytes(8);
+        $lowDw = unpack('V', substr($bytes, 0, 4))[1];
+        $highDw = unpack('V', substr($bytes, 4))[1];
+        return ($highDw << 32) + $lowDw;
     }
 
     /**************************************************************************
@@ -225,7 +201,6 @@ class Stream {
      **************************************************************************/
 
     public function readBytes(int $numberOfBytes): string {
-        //return stream_get_contents($this->stream, $numberOfBytes);
         $bytes = fread($this->stream, $numberOfBytes);
         $n = strlen($bytes);
         if ($n < $numberOfBytes) {
@@ -236,13 +211,6 @@ class Stream {
 
     public function readBytesFull(): string {
         return stream_get_contents($this->stream);
-        /*
-        $bytes = '';
-        while (!feof($this->stream)) {
-            $bytes .= fread($this->stream, 8192);
-        }
-        return $bytes;
-        */
     }
 
     public function ensureFixedContents(int $length, string $expectedBytes): string {
@@ -335,12 +303,6 @@ class Stream {
     }
 
     public static function processZlib(string $bytes): string {
-        /*
-        $cmf = self::strByteToUint($bytes[0]);
-        if (($cmf & 0x0f) !== 0x08) {
-            throw new \RuntimeException("Only the DEFLATE algorithm is supported for zlib data");
-        }
-        */
         $uncompressed = @gzuncompress($bytes);
         if (false === $uncompressed) {
             $error = error_get_last();

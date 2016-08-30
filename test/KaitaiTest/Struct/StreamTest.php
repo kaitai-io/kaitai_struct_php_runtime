@@ -99,22 +99,22 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testS8be() {
-        $this->markTestIncomplete();
-        /*
-        $handle = $this->memoryHandle();
-        fwrite(
-            $handle,
-            "\x80\x00\x00\x00\x00\x00\x00\x00"
+        $bytes = "\x80\x00\x00\x00\x00\x00\x00\x00"
             . "\xff\xff\xff\xff\xff\xff\xff\xff"
-        );
+            . "\x00\x00\x00\x00\x00\x00\x00\x00"
+            . "\x7f\xff\xff\xff\xff\xff\xff\xff";
+        $stream = new Stream($bytes);
 
-        $stream = new Stream($handle);
         $this->assertEquals(-9223372036854775808, $stream->readS8be());
 
-        // @TODO: fix
         $stream->seek(8);
         $this->assertEquals(-1, $stream->readS8be());
-        */
+        
+        $stream->seek(16);
+        $this->assertEquals(0, $stream->readS8be());
+        
+        $stream->seek(24);
+        $this->assertEquals(9223372036854775807, $stream->readS8be());
     }
 
     public function testS2le() {
@@ -156,7 +156,22 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testS8le() {
-        $this->markTestIncomplete();
+        $bytes = "\x00\x00\x00\x00\x00\x00\x00\x80"
+            . "\xff\xff\xff\xff\xff\xff\xff\xff"
+            . "\x00\x00\x00\x00\x00\x00\x00\x00"
+            . "\xff\xff\xff\xff\xff\xff\xff\x7f";
+        $stream = new Stream($bytes);
+
+        $this->assertEquals(-9223372036854775808, $stream->readS8le());
+
+        $stream->seek(8);
+        $this->assertEquals(-1, $stream->readS8le());
+
+        $stream->seek(16);
+        $this->assertEquals(0, $stream->readS8le());
+
+        $stream->seek(24);
+        $this->assertEquals(9223372036854775807, $stream->readS8le());
     }
 
     public function testU1() {
