@@ -8,6 +8,8 @@ class Stream {
     const SIGN_MASK_32 = 0x80000000;     // (1 << (32 - 1));
     const SIGN_MASK_64 = 0x800000000000; // (1 << (64 - 1));
 
+    const INTERNAL_ENCODING = 'utf-8';
+
     /**
      * @param resource|string $stream
      */
@@ -50,8 +52,9 @@ class Stream {
      * @TODO: if $pos (int) > PHP_INT_MAX it becomes float in PHP.
      */
     public function seek(int $pos)/*: void */ {
-        if ($pos >= $this->size()) {
-            throw new \RuntimeException("The position must be < size of the stream");
+        $size = $this->size();
+        if ($pos > $size) {
+            throw new \RuntimeException("The position ($pos) must be less than the size ($size) of the stream");
         }
         $res = fseek($this->stream, $pos);
         if ($res !== 0) {
@@ -321,12 +324,12 @@ class Stream {
     }
 
     protected function bytesToEncoding(string $bytes, string $outputEncoding): string {
-        return iconv($this->defaultEncoding(), $outputEncoding, $bytes);
+        return iconv($this->internalEncoding(), $outputEncoding, $bytes);
     }
 
-    protected function defaultEncoding(): string {
+    protected function internalEncoding(): string {
         //  Encoding should be a compatible superset of ASCII.
-        return 'utf-8';
+        return self::INTERNAL_ENCODING;
     }
 
     private static function strByteToUint(string $byte): int {

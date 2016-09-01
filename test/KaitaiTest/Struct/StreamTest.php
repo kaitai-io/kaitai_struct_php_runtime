@@ -478,12 +478,11 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals($pos, $stream->pos());
         $this->assertFalse($stream->isEof());
 
-        $this->assertSeekCallFailsForPos($stream, $fileSize);
         $this->assertSeekCallFailsForPos($stream, $fileSize + 3);
 
-        $pos = $fileSize - 1;
+        $pos = $fileSize;
         $this->assertNull($stream->seek($pos));
-        $this->assertFalse($stream->isEof());
+        $this->assertTrue($stream->isEof());
         $this->assertEquals($pos, $stream->pos());
     }
 
@@ -492,7 +491,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
             $this->assertNull($stream->seek($pos));
             $this->fail();
         } catch (\RuntimeException $e) {
-            $this->assertEquals("The position must be < size of the stream", $e->getMessage());
+            $this->assertRegExp("~The position \\($pos\\) must be less than the size \\(\\d+\\) of the stream~s", $e->getMessage());
         }
     }
 
