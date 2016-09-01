@@ -9,7 +9,7 @@ abstract class Struct {
     public function __construct(Stream $io, Struct $parent = null, Struct $root = null) {
         $this->_io = $io;
         $this->_parent = $parent;
-        $this->_root = $root;
+        $this->_root = $root ?: $this;
     }
 
     public static function fromFile($filePath): Struct {
