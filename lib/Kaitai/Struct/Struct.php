@@ -34,4 +34,8 @@ abstract class Struct {
     public function _root(): Struct {
         return $this->_root;
     }
+
+    public function _io(): Stream {
+        return $this->_io;
+    }
 }
