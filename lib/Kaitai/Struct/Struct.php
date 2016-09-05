@@ -20,6 +20,13 @@ abstract class Struct {
         );
     }
 
+    public function __get($name) {
+        if (method_exists($this, $name)) {
+            return $this->$name();
+        }
+        throw new \RuntimeException("Cannot access the property '" . get_class($this) . '::' . $name . "'");
+    }
+
     public function _parent(): Struct {
         return $this->_parent;
     }
