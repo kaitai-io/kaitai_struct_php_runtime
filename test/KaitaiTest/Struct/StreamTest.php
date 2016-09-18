@@ -4,6 +4,9 @@ namespace KaitaiTest\Struct;
 use Kaitai\Struct\Stream;
 
 class StreamTest extends \PHPUnit_Framework_TestCase {
+    const SINGLE_EPS = 0.0000001;
+    const DOUBLE_EPS = 0.0000001;
+
     public function testStreamPositioning_FileHandle() {
         $this->checkStreamPositioning(
             fopen(__DIR__ .'/_files/fixed_struct.bin', 'rb'),
@@ -307,20 +310,36 @@ class StreamTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals(-1, call_user_func($read));
     }
 
+
     public function testReadF4be() {
-        $this->markTestIncomplete();
+        $bytes = "\xc0\x49\x0f\xdb";
+        // 1100 0000 0100 1001 0000 1111 1101 1011
+        $stream = new Stream($bytes);
+        $this->assertEquals(-3.141592653589793, $stream->readF4be(), '', self::SINGLE_EPS);
+        // @TODO: test NAN, -INF, INF, -0.0, 0.0
+        /*
+        NaN 0x7FC00000.
+        INF 0x7F800000.
+        -INF 0xFF800000.
+        */
     }
 
     public function testReadF8be() {
         $this->markTestIncomplete();
+        // @TODO: test NAN, -INF, INF, -0.0, 0.0
     }
 
     public function testReadF4le() {
-        $this->markTestIncomplete();
+        $bytes = "\xdb\x0f\x49\xc0";
+        // 1101 1011 0000 1111 0100 1001 1100 0000
+        $stream = new Stream($bytes);
+        $this->assertEquals(-3.141592653589793, $stream->readF4le(), '', self::SINGLE_EPS);
+        // @TODO: test NAN, -INF, INF, -0.0, 0.0
     }
 
     public function testReadF8le() {
         $this->markTestIncomplete();
+        // @TODO: test NAN, -INF, INF, -0.0, 0.0
     }
 
     public function testReadBytes_Сonsistently() {

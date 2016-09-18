@@ -14,8 +14,8 @@ class Stream {
      * @param resource|string $stream
      */
     public function __construct($stream) {
-        if (PHP_INT_SIZE < 8) {
-            throw new \RuntimeException("At least 64-bit platform is required");
+        if (PHP_INT_SIZE !== 8) {
+            throw new \RuntimeException("Only 64-bit platform is implemented");
         }
         if (is_string($stream)) {
             $this->stream = fopen('php://memory', 'r+b');
@@ -84,10 +84,10 @@ class Stream {
     public function readS1(): int {
         return unpack("c", $this->readBytes(1))[1];
     }
-    
+
     // ---
     // 2.1.1. Big-endian
-    
+
     public function readS2be(): int {
         return $this->toSigned($this->readU2be(), self::SIGN_MASK_16);
     }
@@ -102,14 +102,14 @@ class Stream {
         $lowDw = unpack('N', substr($bytes, 4))[1];
         return ($highDw << 32) + $lowDw;
     }
-    
+
     // --
     // 2.1.2. Little-endian
 
     public function readS2le(): int {
         return $this->toSigned($this->readU2le(), self::SIGN_MASK_16);
     }
-    
+
     public function readS4le(): int {
         return $this->toSigned($this->readU4le(), self::SIGN_MASK_32);
     }
@@ -166,37 +166,39 @@ class Stream {
     // ---
     // 3.1. Big-endian
 
+    /**
+     * Single precision floating-point number
+     */
     public function readF4be(): float {
-        $bytes = $this->readBytes(4);
-
-        //read_bytes(4).unpack('g')[0]
-        throw new \RuntimeException("Not implemented yet");
+        $bits = $this->readU4be();
+        return $this->toSinglePrecisionFloat($bits);
     }
 
+    /**
+     * Double precision floating-point number.
+     */
     public function readF8be(): float {
-        $bytes = $this->readBytes(8);
-
-        //read_bytes(8).unpack('G')[0]
-        throw new \RuntimeException("Not implemented yet");
+        $bits = $this->readBytes(8);
+        return $this->toDoublePrecisionFloat($bits);
     }
 
     // ---
     // 3.2. Little-endian
 
+    /**
+     * Single precision floating-point number.
+     */
     public function readF4le(): float {
-        $bytes = $this->readBytes(4);
-
-        //read_bytes(4).unpack('e')[0]
-        throw new \RuntimeException("Not implemented yet");
+        $bits = $this->readU4le();
+        return $this->toSinglePrecisionFloat($bits);
     }
 
+    /**
+     * Double precision floating-point number.
+     */
     public function readF8le(): float {
-        $bytes = $this->readBytes(8);
-
-        //read_bytes(8).unpack('E')[0]
-
-        throw new \RuntimeException("Not implemented yet");
-
+        $bits = $this->readBytes(8);
+        return $this->toDoublePrecisionFloat($bits);
     }
 
     /**************************************************************************
@@ -323,6 +325,86 @@ class Stream {
         return ($x & ~$mask) - ($x & $mask);
     }
 
+    protected function toSinglePrecisionFloat(int $bits): float {
+        $fractionToFloat = function (int $fraction): float {
+            $val = 0;
+            for ($i = 22, $j = 1; $i >= 0; $i--, $j++) {
+                $bit = ((1 << $i) & $fraction) >> $i;
+                $val += 2 ** (-$j) * $bit;
+            }
+            return $val;
+        };
+
+        // Sign - 31 bit, one bit
+        $sign = ($bits >> 31) == 0 ? 1 : -1;
+
+        // Exponent - [23..30] bits, 8 bits
+        $exponent = (($bits >> 23) & 0xff);
+
+        // Fraction/mantissa/significand - [22..0] bits, 23 bits,
+        $fraction = $bits & 0x7fffff;
+
+        if (0 === $exponent) {
+            if ($fraction === 0) {
+                // $exponent === 0, $fraction === 0.
+                // We use 0.0 to have ability to return -0.0, the integer 0 does not work.
+                return $sign * 0.0;
+            }
+            // $exponent === 0, $fraction !== 0 => return denormalized number
+            return $sign * 2 ** (-126) * $fractionToFloat($fraction);
+        } elseif (255 === $exponent) {
+            if ($fraction !== 0) {
+                // $exponent === 255, $fraction !== 0.
+                return NAN;
+            }
+            // $exponent === 255, $fraction === 0.
+            return $sign * INF;
+        }
+
+        // $exponent not in [0, 255]
+        return $sign * 2 ** ($exponent - 127) * (1 + $fractionToFloat($fraction));
+    }
+
+    protected function toDoublePrecisionFloat(int $bits): float {
+        $fractionToFloat = function (int $fraction): float {
+            $val = 0;
+            for ($i = 51, $j = 1; $i >= 0; $i--, $j++) {
+                $bit = ((1 << $i) & $fraction) >> $i;
+                $val += 2 ** (-$j) * $bit;
+            }
+            return $val;
+        };
+
+        // Sign - 63 bit, one bit
+        $sign = ($bits >> 63) == 0 ? 1 : -1;
+
+        // Exponent - [52..62] bits, 11 bits
+        $exponent = (($bits >> 52) & 0x3ff);
+
+        // Fraction/mantissa/significand - [51..0] bits, 52 bits,
+        $fraction = $bits & 0xffffffffffffff;
+
+        if (0 === $exponent) {
+            if ($fraction === 0) {
+                // $exponent === 0, $fraction === 0.
+                // We use 0.0 to have ability to return -0.0, the integer 0 does not work.
+                return $sign * 0.0;
+            }
+            // $exponent === 0, $fraction !== 0 => return denormalized number
+            return $sign * 2 ** (-1022) * $fractionToFloat($fraction);
+        } elseif (2047 === $exponent) {
+            if ($fraction !== 0) {
+                // $exponent === 2047, $fraction !== 0.
+                return NAN;
+            }
+            // $exponent === 2047, $fraction === 0.
+            return $sign * INF;
+        }
+
+        // $exponent not in [0, 255]
+        return $sign * 2 ** ($exponent - 1023) * (1 + $fractionToFloat($fraction));
+    }
+
     protected function bytesToEncoding(string $bytes, string $outputEncoding): string {
         return iconv($this->internalEncoding(), $outputEncoding, $bytes);
     }
@@ -332,7 +414,7 @@ class Stream {
         return self::INTERNAL_ENCODING;
     }
 
-    private static function strByteToUint(string $byte): int {
+    protected static function strByteToUint(string $byte): int {
         // May be just ord()??
         return unpack("C", $byte)[1];
     }
