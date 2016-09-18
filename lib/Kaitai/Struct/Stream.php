@@ -379,10 +379,10 @@ class Stream {
         $sign = ($bits >> 63) == 0 ? 1 : -1;
 
         // Exponent - [52..62] bits, 11 bits
-        $exponent = (($bits >> 52) & 0x3ff);
+        $exponent = (($bits >> 52) & 0x7ff);
 
         // Fraction/mantissa/significand - [51..0] bits, 52 bits,
-        $fraction = $bits & 0xffffffffffffff;
+        $fraction = $bits & 0xfffffffffffff;
 
         if (0 === $exponent) {
             if ($fraction === 0) {
