@@ -339,7 +339,7 @@ class Stream {
         $sign = ($bits >> 31) == 0 ? 1 : -1;
 
         // Exponent - [23..30] bits, 8 bits
-        $exponent = (($bits >> 23) & 0xff);
+        $exponent = ($bits >> 23) & 0xff;
 
         // Fraction/mantissa/significand - [22..0] bits, 23 bits,
         $fraction = $bits & 0x7fffff;
@@ -361,7 +361,7 @@ class Stream {
             return $sign * INF;
         }
 
-        // $exponent not in [0, 255]
+        // $exponent is not either 0 or 255.
         return $sign * 2 ** ($exponent - 127) * (1 + $fractionToFloat($fraction));
     }
 
@@ -379,7 +379,7 @@ class Stream {
         $sign = ($bits >> 63) == 0 ? 1 : -1;
 
         // Exponent - [52..62] bits, 11 bits
-        $exponent = (($bits >> 52) & 0x7ff);
+        $exponent = ($bits >> 52) & 0x7ff;
 
         // Fraction/mantissa/significand - [51..0] bits, 52 bits,
         $fraction = $bits & 0xfffffffffffff;
@@ -401,7 +401,7 @@ class Stream {
             return $sign * INF;
         }
 
-        // $exponent not in [0, 255]
+        // $exponent is not either 0 or 2047.
         return $sign * 2 ** ($exponent - 1023) * (1 + $fractionToFloat($fraction));
     }
 
