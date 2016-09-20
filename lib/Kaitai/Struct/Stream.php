@@ -321,11 +321,11 @@ class Stream {
      * Internal
      **************************************************************************/
 
-    protected static function decodeSignedInt(int $x, int $mask): int {
+    private static function decodeSignedInt(int $x, int $mask): int {
         return ($x & ~$mask) - ($x & $mask);
     }
 
-    protected function decodeSinglePrecisionFloat(int $bits): float {
+    private function decodeSinglePrecisionFloat(int $bits): float {
         $fractionToFloat = function (int $fraction): float {
             $val = 0;
             for ($i = 22, $j = 1; $i >= 0; $i--, $j++) {
@@ -365,7 +365,7 @@ class Stream {
         return $sign * 2 ** ($exponent - 127) * (1 + $fractionToFloat($fraction));
     }
 
-    protected function decodeDoublePrecisionFloat(int $bits): float {
+    private function decodeDoublePrecisionFloat(int $bits): float {
         $fractionToFloat = function (int $fraction): float {
             $val = 0;
             for ($i = 51, $j = 1; $i >= 0; $i--, $j++) {
@@ -405,12 +405,12 @@ class Stream {
         return $sign * 2 ** ($exponent - 1023) * (1 + $fractionToFloat($fraction));
     }
 
-    protected function bytesToEncoding(string $bytes, string $outputEncoding): string {
+    private function bytesToEncoding(string $bytes, string $outputEncoding): string {
         //  The first argument should be encoding compatible superset of ASCII.
         return iconv(self::INTERNAL_ENCODING, $outputEncoding, $bytes);
     }
 
-    protected static function strByteToUint(string $byte): int {
+    private static function strByteToUint(string $byte): int {
         // May be just ord()??
         return unpack("C", $byte)[1];
     }
