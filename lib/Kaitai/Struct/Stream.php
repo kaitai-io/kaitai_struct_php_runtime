@@ -89,11 +89,11 @@ class Stream {
     // 2.1.1. Big-endian
 
     public function readS2be(): int {
-        return $this->toSigned($this->readU2be(), self::SIGN_MASK_16);
+        return $this->decodeSignedInt($this->readU2be(), self::SIGN_MASK_16);
     }
 
     public function readS4be(): int {
-        return $this->toSigned($this->readU4be(), self::SIGN_MASK_32);
+        return $this->decodeSignedInt($this->readU4be(), self::SIGN_MASK_32);
     }
 
     public function readS8be(): int {
@@ -107,11 +107,11 @@ class Stream {
     // 2.1.2. Little-endian
 
     public function readS2le(): int {
-        return $this->toSigned($this->readU2le(), self::SIGN_MASK_16);
+        return $this->decodeSignedInt($this->readU2le(), self::SIGN_MASK_16);
     }
 
     public function readS4le(): int {
-        return $this->toSigned($this->readU4le(), self::SIGN_MASK_32);
+        return $this->decodeSignedInt($this->readU4le(), self::SIGN_MASK_32);
     }
 
     public function readS8le(): int {
@@ -171,7 +171,7 @@ class Stream {
      */
     public function readF4be(): float {
         $bits = $this->readU4be();
-        return $this->toSinglePrecisionFloat($bits);
+        return $this->decodeSinglePrecisionFloat($bits);
     }
 
     /**
@@ -179,7 +179,7 @@ class Stream {
      */
     public function readF8be(): float {
         $bits = $this->readBytes(8);
-        return $this->toDoublePrecisionFloat($bits);
+        return $this->decodeDoublePrecisionFloat($bits);
     }
 
     // ---
@@ -190,7 +190,7 @@ class Stream {
      */
     public function readF4le(): float {
         $bits = $this->readU4le();
-        return $this->toSinglePrecisionFloat($bits);
+        return $this->decodeSinglePrecisionFloat($bits);
     }
 
     /**
@@ -198,7 +198,7 @@ class Stream {
      */
     public function readF8le(): float {
         $bits = $this->readBytes(8);
-        return $this->toDoublePrecisionFloat($bits);
+        return $this->decodeDoublePrecisionFloat($bits);
     }
 
     /**************************************************************************
@@ -321,11 +321,11 @@ class Stream {
      * Internal
      **************************************************************************/
 
-    protected static function toSigned(int $x, int $mask): int {
+    protected static function decodeSignedInt(int $x, int $mask): int {
         return ($x & ~$mask) - ($x & $mask);
     }
 
-    protected function toSinglePrecisionFloat(int $bits): float {
+    protected function decodeSinglePrecisionFloat(int $bits): float {
         $fractionToFloat = function (int $fraction): float {
             $val = 0;
             for ($i = 22, $j = 1; $i >= 0; $i--, $j++) {
@@ -365,7 +365,7 @@ class Stream {
         return $sign * 2 ** ($exponent - 127) * (1 + $fractionToFloat($fraction));
     }
 
-    protected function toDoublePrecisionFloat(int $bits): float {
+    protected function decodeDoublePrecisionFloat(int $bits): float {
         $fractionToFloat = function (int $fraction): float {
             $val = 0;
             for ($i = 51, $j = 1; $i >= 0; $i--, $j++) {
@@ -408,12 +408,10 @@ class Stream {
     protected function bytesToEncoding(string $bytes, string $outputEncoding): string {
         return iconv($this->internalEncoding(), $outputEncoding, $bytes);
     }
-
     protected function internalEncoding(): string {
         //  Encoding should be a compatible superset of ASCII.
         return self::INTERNAL_ENCODING;
     }
-
     protected static function strByteToUint(string $byte): int {
         // May be just ord()??
         return unpack("C", $byte)[1];
