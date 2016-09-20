@@ -406,12 +406,10 @@ class Stream {
     }
 
     protected function bytesToEncoding(string $bytes, string $outputEncoding): string {
-        return iconv($this->internalEncoding(), $outputEncoding, $bytes);
+        //  The first argument should be encoding compatible superset of ASCII.
+        return iconv(self::INTERNAL_ENCODING, $outputEncoding, $bytes);
     }
-    protected function internalEncoding(): string {
-        //  Encoding should be a compatible superset of ASCII.
-        return self::INTERNAL_ENCODING;
-    }
+
     protected static function strByteToUint(string $byte): int {
         // May be just ord()??
         return unpack("C", $byte)[1];
