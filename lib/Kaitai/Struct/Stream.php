@@ -178,7 +178,7 @@ class Stream {
      * Double precision floating-point number.
      */
     public function readF8be(): float {
-        $bits = $this->readBytes(8);
+        $bits = $this->readU8be();
         return $this->decodeDoublePrecisionFloat($bits);
     }
 
@@ -197,7 +197,7 @@ class Stream {
      * Double precision floating-point number.
      */
     public function readF8le(): float {
-        $bits = $this->readBytes(8);
+        $bits = $this->readU8le();
         return $this->decodeDoublePrecisionFloat($bits);
     }
 
