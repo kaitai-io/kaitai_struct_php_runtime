@@ -231,15 +231,15 @@ class Stream {
      * 5. Strings
      **************************************************************************/
 
-    public function readStrEos(string $outputEncoding): string {
-        return $this->bytesToEncoding($this->readBytesFull(), $outputEncoding);
+    public function readStrEos(string $encoding): string {
+        return $this->bytesToEncoding($this->readBytesFull(), $encoding);
     }
 
-    public function readStrByteLimit(int $numberOfBytes, string $outputEncoding): string {
-        return $this->bytesToEncoding($this->readBytes($numberOfBytes), $outputEncoding);
+    public function readStrByteLimit(int $numberOfBytes, string $encoding): string {
+        return $this->bytesToEncoding($this->readBytes($numberOfBytes), $encoding);
     }
 
-    public function readStrz(string $outputEncoding, $terminator, bool $includeTerminator, bool $consumeTerminator, bool $eosError): string {
+    public function readStrz(string $encoding, $terminator, bool $includeTerminator, bool $consumeTerminator, bool $eosError): string {
         if (is_int($terminator)) {
             $terminator = chr($terminator);
         }
@@ -263,7 +263,7 @@ class Stream {
             }
             $bytes .= $byte;
         }
-        return $this->bytesToEncoding($bytes, $outputEncoding);
+        return $this->bytesToEncoding($bytes, $encoding);
     }
 
     /**************************************************************************
@@ -405,9 +405,9 @@ class Stream {
         return $sign * 2 ** ($exponent - 1023) * (1 + $fractionToFloat($fraction));
     }
 
-    private function bytesToEncoding(string $bytes, string $outputEncoding): string {
+    private function bytesToEncoding(string $bytes, string $encoding): string {
         //  The first argument should be encoding compatible superset of ASCII.
-        return iconv(self::INTERNAL_ENCODING, $outputEncoding, $bytes);
+        return iconv($encoding, self::INTERNAL_ENCODING, $bytes);
     }
 
     private static function strByteToUint(string $byte): int {
