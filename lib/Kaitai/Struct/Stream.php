@@ -8,8 +8,6 @@ class Stream {
     const SIGN_MASK_32 = 0x80000000;     // (1 << (32 - 1));
     const SIGN_MASK_64 = 0x800000000000; // (1 << (64 - 1));
 
-    const INTERNAL_ENCODING = 'utf-8';
-
     /**
      * @param resource|string $stream
      */
@@ -232,11 +230,11 @@ class Stream {
      **************************************************************************/
 
     public function readStrEos(string $encoding): string {
-        return $this->bytesToEncoding($this->readBytesFull(), $encoding);
+        return $this->toUtf8($this->readBytesFull(), $encoding);
     }
 
     public function readStrByteLimit(int $numberOfBytes, string $encoding): string {
-        return $this->bytesToEncoding($this->readBytes($numberOfBytes), $encoding);
+        return $this->toUtf8($this->readBytes($numberOfBytes), $encoding);
     }
 
     public function readStrz(string $encoding, $terminator, bool $includeTerminator, bool $consumeTerminator, bool $eosError): string {
@@ -263,7 +261,7 @@ class Stream {
             }
             $bytes .= $byte;
         }
-        return $this->bytesToEncoding($bytes, $encoding);
+        return $this->toUtf8($bytes, $encoding);
     }
 
     /**************************************************************************
@@ -405,9 +403,8 @@ class Stream {
         return $sign * 2 ** ($exponent - 1023) * (1 + $fractionToFloat($fraction));
     }
 
-    private function bytesToEncoding(string $bytes, string $encoding): string {
-        //  The first argument should be encoding compatible superset of ASCII.
-        return iconv($encoding, self::INTERNAL_ENCODING, $bytes);
+    private function toUtf8(string $bytes, string $encoding): string {
+        return iconv($encoding, 'utf-8', $bytes);
     }
 
     private static function strByteToUint(string $byte): int {
