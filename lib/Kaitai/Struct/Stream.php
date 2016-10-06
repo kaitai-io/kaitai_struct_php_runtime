@@ -204,6 +204,12 @@ class Stream {
      **************************************************************************/
 
     public function readBytes(int $numberOfBytes): string {
+        // It is legitimate to ask for 0 bytes in Kaitai Struct API,
+        // but PHP's fread() considers this an error, so check &
+        // handle this case before fread()
+        if ($numberOfBytes == 0) {
+            return '';
+        }
         $bytes = fread($this->stream, $numberOfBytes);
         $n = strlen($bytes);
         if ($n < $numberOfBytes) {
