@@ -322,6 +322,20 @@ class Stream {
     }
 
     /**************************************************************************
+     * 7. Misc runtime
+     **************************************************************************/
+
+    /**
+     * Performs modulo operation between two integers: dividend `a`
+     * and divisor `b`. Divisor `b` is expected to be positive. The
+     * result is always 0 <= x <= b - 1.
+     */
+    function mod(int $a, int $b): int {
+        return $a - intdiv($a, $b) * $b;
+    }
+
+
+    /**************************************************************************
      * Internal
      **************************************************************************/
 
