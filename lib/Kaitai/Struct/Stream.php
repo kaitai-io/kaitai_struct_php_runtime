@@ -330,7 +330,7 @@ class Stream {
      * and divisor `b`. Divisor `b` is expected to be positive. The
      * result is always 0 <= x <= b - 1.
      */
-    function mod(int $a, int $b): int {
+    public static function mod(int $a, int $b): int {
         return $a - intdiv($a, $b) * $b;
     }
 
