@@ -331,7 +331,7 @@ class Stream {
      * result is always 0 <= x <= b - 1.
      */
     public static function mod(int $a, int $b): int {
-        return $a - intdiv($a, $b) * $b;
+        return $a - (int)floor($a, $b) * $b;
     }
 
 
