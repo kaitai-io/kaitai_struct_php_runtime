@@ -222,7 +222,8 @@ class Stream {
         return stream_get_contents($this->stream);
     }
 
-    public function ensureFixedContents(int $length, string $expectedBytes): string {
+    public function ensureFixedContents(string $expectedBytes): string {
+        $length = strlen($expectedBytes);
         $bytes = $this->readBytes($length);
         if ($bytes !== $expectedBytes) {
             // @TODO: print expected and actual bytes
