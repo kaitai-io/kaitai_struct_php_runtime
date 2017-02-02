@@ -22,6 +22,8 @@ class Stream {
             $this->stream = $stream;
         }
         fseek($this->stream, 0, SEEK_SET);
+
+        $this->alignToByte();
     }
 
     /**************************************************************************
@@ -200,7 +202,47 @@ class Stream {
     }
 
     /**************************************************************************
-     * 4. Byte arrays
+     * 4. Unaligned bit values
+     **************************************************************************/
+
+    public function alignToByte()/*: void */ {
+        $this->bits = 0;
+        $this->bitsLeft = 0;
+    }
+
+    public function readBitsInt(int $n): int {
+        $bitsNeeded = $n - $this->bitsLeft;
+        if ($bitsNeeded > 0) {
+            // 1 bit  => 1 byte
+            // 8 bits => 1 byte
+            // 9 bits => 2 bytes
+            $bytesNeeded = intdiv($bitsNeeded - 1, 8) + 1;
+            $buf = $this->readBytes($bytesNeeded);
+            for ($i = 0; $i < $bytesNeeded; $i++) {
+                $b = ord($buf[$i]);
+                $this->bits <<= 8;
+                $this->bits |= $b;
+                $this->bitsLeft += 8;
+            }
+        }
+
+        // raw mask with required number of 1s, starting from lowest bit
+        $mask = (1 << $n) - 1;
+        // shift mask to align with highest bits available in "bits"
+        $shiftBits = $this->bitsLeft - $n;
+        $mask <<= $shiftBits;
+        // derive reading result
+        $res = ($this->bits & $mask) >> $shiftBits;
+        // clear top bits that we've just read => AND with 1s
+        $this->bitsLeft -= $n;
+        $mask = (1 << $this->bitsLeft) - 1;
+        $this->bits &= $mask;
+
+        return $res;
+    }
+
+    /**************************************************************************
+     * 5. Byte arrays
      **************************************************************************/
 
     public function readBytes(int $numberOfBytes): string {
@@ -233,7 +275,7 @@ class Stream {
     }
 
     /**************************************************************************
-     * 5. Strings
+     * 6. Strings
      **************************************************************************/
 
     public function readStrEos(string $encoding): string {
@@ -272,7 +314,7 @@ class Stream {
     }
 
     /**************************************************************************
-     * 6. Byte array processing
+     * 7. Byte array processing
      **************************************************************************/
 
     /**
@@ -323,7 +365,7 @@ class Stream {
     }
 
     /**************************************************************************
-     * 7. Misc runtime
+     * 8. Misc runtime
      **************************************************************************/
 
     /**
