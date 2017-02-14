@@ -264,29 +264,7 @@ class Stream {
         return stream_get_contents($this->stream);
     }
 
-    public function ensureFixedContents(string $expectedBytes): string {
-        $length = strlen($expectedBytes);
-        $bytes = $this->readBytes($length);
-        if ($bytes !== $expectedBytes) {
-            // @TODO: print expected and actual bytes
-            throw new \RuntimeException("Expected bytes are not equal to actual bytes");
-        }
-        return $bytes;
-    }
-
-    /**************************************************************************
-     * Strings
-     **************************************************************************/
-
-    public function readStrEos(string $encoding): string {
-        return $this->toUtf8($this->readBytesFull(), $encoding);
-    }
-
-    public function readStrByteLimit(int $numberOfBytes, string $encoding): string {
-        return $this->toUtf8($this->readBytes($numberOfBytes), $encoding);
-    }
-
-    public function readStrz(string $encoding, $terminator, bool $includeTerminator, bool $consumeTerminator, bool $eosError): string {
+    public function readBytesTerm($terminator, bool $includeTerminator, bool $consumeTerminator, bool $eosError): string {
         if (is_int($terminator)) {
             $terminator = chr($terminator);
         }
@@ -310,7 +288,21 @@ class Stream {
             }
             $bytes .= $byte;
         }
-        return $this->toUtf8($bytes, $encoding);
+        return $bytes;
+    }
+
+    public function ensureFixedContents(string $expectedBytes): string {
+        $length = strlen($expectedBytes);
+        $bytes = $this->readBytes($length);
+        if ($bytes !== $expectedBytes) {
+            // @TODO: print expected and actual bytes
+            throw new \RuntimeException("Expected bytes are not equal to actual bytes");
+        }
+        return $bytes;
+    }
+
+    public static function toUtf8(string $bytes, string $encoding): string {
+        return iconv($encoding, 'utf-8', $bytes);
     }
 
     /**************************************************************************
@@ -463,10 +455,6 @@ class Stream {
 
         // $exponent is not either 0 or 2047.
         return $sign * 2 ** ($exponent - 1023) * (1 + $fractionToFloat($fraction));
-    }
-
-    private function toUtf8(string $bytes, string $encoding): string {
-        return iconv($encoding, 'utf-8', $bytes);
     }
 
     private static function strByteToUint(string $byte): int {
