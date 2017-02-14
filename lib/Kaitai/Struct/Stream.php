@@ -27,7 +27,7 @@ class Stream {
     }
 
     /**************************************************************************
-     * 1. Stream positioning
+     * Stream positioning
      **************************************************************************/
 
     public function isEof(): bool {
@@ -71,11 +71,11 @@ class Stream {
     }
 
     /**************************************************************************
-     * 2. Integer numbers
+     * Integer numbers
      **************************************************************************/
 
     /**************************************************************************
-     * 2.1. Signed
+     * Signed
      */
 
     /**
@@ -86,7 +86,7 @@ class Stream {
     }
 
     // ---
-    // 2.1.1. Big-endian
+    // Big-endian
 
     public function readS2be(): int {
         return $this->decodeSignedInt($this->readU2be(), self::SIGN_MASK_16);
@@ -104,7 +104,7 @@ class Stream {
     }
 
     // --
-    // 2.1.2. Little-endian
+    // Little-endian
 
     public function readS2le(): int {
         return $this->decodeSignedInt($this->readU2le(), self::SIGN_MASK_16);
@@ -122,7 +122,7 @@ class Stream {
     }
 
     /**************************************************************************
-     * 2.2. Unsigned
+     * Unsigned
      */
 
     public function readU1(): int {
@@ -130,7 +130,7 @@ class Stream {
     }
 
     // ---
-    // 2.2.1. Big-endian
+    // Big-endian
 
     public function readU2be(): int {
         return unpack("n", $this->readBytes(2))[1];
@@ -145,7 +145,7 @@ class Stream {
     }
 
     // ---
-    // 2.2.2. Little-endian
+    // Little-endian
 
     public function readU2le(): int {
         return unpack("v", $this->readBytes(2))[1];
@@ -160,11 +160,11 @@ class Stream {
     }
 
     /**************************************************************************
-     * 3. Floating point numbers
+     * Floating point numbers
      **************************************************************************/
 
     // ---
-    // 3.1. Big-endian
+    // Big-endian
 
     /**
      * Single precision floating-point number
@@ -183,7 +183,7 @@ class Stream {
     }
 
     // ---
-    // 3.2. Little-endian
+    // Little-endian
 
     /**
      * Single precision floating-point number.
@@ -202,7 +202,7 @@ class Stream {
     }
 
     /**************************************************************************
-     * 4. Unaligned bit values
+     * Unaligned bit values
      **************************************************************************/
 
     public function alignToByte()/*: void */ {
@@ -242,7 +242,7 @@ class Stream {
     }
 
     /**************************************************************************
-     * 5. Byte arrays
+     * Byte arrays
      **************************************************************************/
 
     public function readBytes(int $numberOfBytes): string {
@@ -275,7 +275,7 @@ class Stream {
     }
 
     /**************************************************************************
-     * 6. Strings
+     * Strings
      **************************************************************************/
 
     public function readStrEos(string $encoding): string {
@@ -314,7 +314,7 @@ class Stream {
     }
 
     /**************************************************************************
-     * 7. Byte array processing
+     * Byte array processing
      **************************************************************************/
 
     /**
@@ -365,7 +365,7 @@ class Stream {
     }
 
     /**************************************************************************
-     * 8. Misc runtime
+     * Misc runtime
      **************************************************************************/
 
     /**
@@ -376,7 +376,6 @@ class Stream {
     public static function mod(int $a, int $b): int {
         return $a - (int)floor($a / $b) * $b;
     }
-
 
     /**************************************************************************
      * Internal
