@@ -6,6 +6,8 @@ Kaitai Struct is a declarative language used for describe various binary
 data structures, laid out in files or in memory: i.e. binary file
 formats, network stream packet formats, etc.
 
+The library can be used as part of Kaitai Struct or independently (see PHP-specific notes below).
+
 Further reading:
 
 * [About Kaitai Struct](https://github.com/kaitai-io/kaitai_struct/)
