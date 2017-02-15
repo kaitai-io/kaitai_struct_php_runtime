@@ -324,7 +324,7 @@ class Stream {
         }
     }
 
-    public static function toUtf8(string $bytes, string $encoding): string {
+    public static function bytesToStr(string $bytes, string $encoding): string {
         return iconv($encoding, 'utf-8', $bytes);
     }
 
