@@ -303,6 +303,27 @@ class Stream {
         return $bytes;
     }
 
+    public static function bytesStripRight(string $bytes, $padByte): string {
+        if (is_int($padByte)) {
+            $padByte = chr($padByte);
+        }
+        return rtrim($bytes, $padByte);
+    }
+
+    public static function bytesTerminate(string $bytes, $terminator, bool $includeTerminator): string {
+        if (is_int($terminator)) {
+            $terminator = chr($terminator);
+        }
+        $newLen = strpos($bytes, $terminator);
+        if ($newLen === FALSE) {
+            return $bytes;
+        } else {
+            if ($includeTerminator)
+                $newLen++;
+            return substr($bytes, 0, $newLen);
+        }
+    }
+
     public static function toUtf8(string $bytes, string $encoding): string {
         return iconv($encoding, 'utf-8', $bytes);
     }
