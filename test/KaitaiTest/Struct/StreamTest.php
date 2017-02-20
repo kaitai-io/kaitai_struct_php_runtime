@@ -386,64 +386,13 @@ class StreamTest extends TestCase {
         $stream = new Stream($bytes);
         $this->assertEquals(
             $bytes,
-            $stream->ensureFixedContents(strlen($bytes), $bytes)
+            $stream->ensureFixedContents($bytes)
         );
-
         try {
-            $stream->ensureFixedContents(3, $bytes);
+            $stream->ensureFixedContents($bytes);
             $this->fail();
         } catch (\RuntimeException $e) {
-            $this->assertEquals('Requested 3 bytes, but got only 0 bytes', $e->getMessage());
-        }
-    }
-
-    public function testReadStrEos() {
-        $bytes = "\x3c\x3f\x70\x68\x70"; // "<?php"
-        $stream = new Stream($bytes);
-        $stream->seek(1);
-        $this->assertEquals('?php', $stream->readStrEos('utf-8'));
-    }
-
-    public function testReadStrByteLimit() {
-        $bytes = "\x3c\x3f\x70\x68\x70"; // "<?php"
-        $stream = new Stream($bytes);
-        $stream->seek(1);
-        $this->assertEquals('?ph', $stream->readStrByteLimit(3, 'utf-8'));
-    }
-
-    public function testReadStrz() {
-        $bytes = "\x3c\x3f\x70\x68\x70"; // "<?php"
-        $stream = new Stream($bytes);
-
-        $stream->seek(1);
-        $this->assertEquals('?p', $stream->readStrz('utf-8', "\x68", false, false, false));
-        $this->assertEquals(3, $stream->pos());
-
-        $stream->seek(1);
-        $this->assertEquals('?p', $stream->readStrz('utf-8', "\x68", false, true, false));
-        $this->assertEquals(4, $stream->pos());
-
-        $stream->seek(1);
-        $this->assertEquals('?ph', $stream->readStrz('utf-8', "\x68", true, false, false));
-        $this->assertEquals(3, $stream->pos());
-
-        $stream->seek(1);
-        $this->assertEquals('?ph', $stream->readStrz('utf-8', "\x68", true, true, false));
-        $this->assertEquals(4, $stream->pos());
-
-        $terminator = 'o';
-
-        $stream->seek(0);
-        $this->assertEquals('<?php', $stream->readStrz('utf-8', $terminator, false, false, false));
-        $this->assertEquals(strlen($bytes), $stream->pos());
-
-        $stream->seek(0);
-        try {
-            $stream->readStrz('utf-8', $terminator, false, false, true);
-            $this->fail();
-        } catch (\RuntimeException $e) {
-            $this->assertEquals("End of stream reached, but no terminator '$terminator' found", $e->getMessage());
-            $this->assertEquals(strlen($bytes), $stream->pos());
+            $this->assertEquals('Requested ' . strlen($bytes) . ' bytes, but got only 0 bytes', $e->getMessage());
         }
     }
 

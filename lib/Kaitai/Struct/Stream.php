@@ -315,7 +315,7 @@ class Stream {
             $terminator = chr($terminator);
         }
         $newLen = strpos($bytes, $terminator);
-        if ($newLen === FALSE) {
+        if ($newLen === false) {
             return $bytes;
         } else {
             if ($includeTerminator)
