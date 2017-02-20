@@ -2,8 +2,9 @@
 namespace KaitaiTest\Struct;
 
 use Kaitai\Struct\Stream;
+use PHPUnit\Framework\TestCase;
 
-class StreamTest extends \PHPUnit_Framework_TestCase {
+class StreamTest extends TestCase {
     const SINGLE_EPS = 0.0000001;
     const DOUBLE_EPS = 0.0000001;
 
