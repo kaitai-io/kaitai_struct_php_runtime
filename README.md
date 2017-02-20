@@ -8,9 +8,9 @@ formats, network stream packet formats, etc.
 
 Further reading:
 
-* [About Kaitai Struct](https://github.com/kaitai-io/kaitai_struct/)
-* [About API implemented in this library](https://github.com/kaitai-io/kaitai_struct/wiki/Kaitai-Struct-stream-API)
-* [PHP-specific notes](https://github.com/kaitai-io/kaitai_struct/wiki/PHP)
+* [About Kaitai Struct](http://kaitai.io/)
+* [About API implemented in this library](http://doc.kaitai.io/stream_api.html)
+* [PHP-specific notes](http://doc.kaitai.io/lang_php.html)
 
 ## Licensing
 
