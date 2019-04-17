@@ -33,6 +33,10 @@ class Stream {
      **************************************************************************/
 
     public function isEof(): bool {
+        if ($this->bitsLeft > 0) {
+            return false;
+        }
+
         // Unfortunately, feof() documentation in PHP is very unclear and,
         // in fact, its semantics follows C++ semantics with "read at least once
         // past the EOF first" => "set EOF flag on stream" => "eof returns true".
