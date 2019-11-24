@@ -396,6 +396,26 @@ class Stream {
         return $a - (int)floor($a / $b) * $b;
     }
 
+    public static function byteArrayMin(string $b): int {
+        $min = PHP_INT_MAX;
+        for ($i = 0, $n = strlen($b); $i < $n; $i++) {
+            $value = ord($b[$i]);
+            if ($value < $min)
+                $min = $value;
+        }
+        return $min;
+    }
+
+    public static function byteArrayMax(string $b): int {
+        $max = 0;
+        for ($i = 0, $n = strlen($b); $i < $n; $i++) {
+            $value = ord($b[$i]);
+            if ($value > $max)
+                $max = $value;
+        }
+        return $max;
+    }
+
     /**************************************************************************
      * Internal
      **************************************************************************/
