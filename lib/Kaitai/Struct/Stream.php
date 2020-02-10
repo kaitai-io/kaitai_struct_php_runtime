@@ -332,6 +332,10 @@ class Stream {
         return iconv($encoding, 'utf-8', $bytes);
     }
 
+    public static function substring(string $string, int $from, int $to): string {
+        return iconv_substr($string, $from, $to - $from);
+    }
+
     /**************************************************************************
      * Byte array processing
      **************************************************************************/
