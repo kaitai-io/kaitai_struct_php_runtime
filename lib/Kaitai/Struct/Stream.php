@@ -3,6 +3,8 @@ namespace Kaitai\Struct;
 
 use Kaitai\Struct\Error\EOFError;
 use Kaitai\Struct\Error\NotSupportedPlatformError;
+use Kaitai\Struct\Error\RotateProcessError;
+use Kaitai\Struct\Error\ZlibProcessError;
 
 class Stream {
     protected $stream;
@@ -373,7 +375,7 @@ class Stream {
 
     public static function processRotateLeft(string $bytes, int $amount, int $groupSize): string {
         if ($groupSize !== 1) {
-            throw new \RuntimeException("Unable to rotate group of $groupSize bytes yet");
+            throw new RotateProcessError("Unable to rotate group of $groupSize bytes yet");
         }
         $rotated = '';
         for ($i = 0, $n = strlen($bytes); $i < $n; $i++) {
@@ -388,7 +390,7 @@ class Stream {
         if (false === $uncompressed) {
             $error = error_get_last();
             error_clear_last();
-            throw new \RuntimeException($error['message']);
+            throw new ZlibProcessError($error['message']);
         }
         return $uncompressed;
     }
