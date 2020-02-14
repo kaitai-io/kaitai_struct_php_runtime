@@ -2,6 +2,7 @@
 namespace Kaitai\Struct;
 
 use Kaitai\Struct\Error\EOFError;
+use Kaitai\Struct\Error\NotSupportedPlatformError;
 
 class Stream {
     protected $stream;
@@ -17,7 +18,7 @@ class Stream {
      */
     public function __construct($stream) {
         if (PHP_INT_SIZE !== 8) {
-            throw new \RuntimeException("Only 64-bit platform is implemented");
+            throw new NotSupportedPlatformError("Only 64-bit platform is implemented");
         }
         if (is_string($stream)) {
             $this->stream = fopen('php://memory', 'r+b');
