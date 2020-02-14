@@ -344,7 +344,7 @@ class StreamTest extends TestCase {
         // @TODO: test NAN, -INF, INF, -0.0, 0.0
     }
 
-    public function testReadBytes_Сonsistently() {
+    public function testReadBytes_Consistently() {
         $bytes = "\x03\xef\xa4\xb9";
         $stream = new Stream($bytes);
         $this->assertEquals("\x03\xef", $stream->readBytes(2));
