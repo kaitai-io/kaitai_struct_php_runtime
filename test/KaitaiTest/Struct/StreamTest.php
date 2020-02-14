@@ -1,6 +1,7 @@
 <?php
 namespace KaitaiTest\Struct;
 
+use Kaitai\Struct\Error\EOFError;
 use Kaitai\Struct\Stream;
 use PHPUnit\Framework\TestCase;
 
@@ -391,8 +392,8 @@ class StreamTest extends TestCase {
         try {
             $stream->ensureFixedContents($bytes);
             $this->fail();
-        } catch (\RuntimeException $e) {
-            $this->assertEquals('Requested ' . strlen($bytes) . ' bytes, but got only 0 bytes', $e->getMessage());
+        } catch (EOFError $e) {
+            $this->assertEquals('Requested ' . strlen($bytes) . ' bytes, but only 0 bytes available', $e->getMessage());
         }
     }
 
