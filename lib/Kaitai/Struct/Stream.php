@@ -1,6 +1,8 @@
 <?php
 namespace Kaitai\Struct;
 
+use Kaitai\Struct\Error\EOFError;
+
 class Stream {
     protected $stream;
 
@@ -261,7 +263,7 @@ class Stream {
         $bytes = fread($this->stream, $numberOfBytes);
         $n = strlen($bytes);
         if ($n < $numberOfBytes) {
-            throw new \RuntimeException("Requested $numberOfBytes bytes, but got only $n bytes");
+            throw new EOFError($numberOfBytes, $n);
         }
         return $bytes;
     }
