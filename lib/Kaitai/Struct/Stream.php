@@ -297,6 +297,9 @@ class Stream {
         return $bytes;
     }
 
+    /**
+     * @deprecated Unused since Kaitai Struct Compiler v0.9+ - compatibility with older versions
+     */
     public function ensureFixedContents(string $expectedBytes): string {
         $length = strlen($expectedBytes);
         $bytes = $this->readBytes($length);
