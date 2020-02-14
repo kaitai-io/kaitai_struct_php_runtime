@@ -2,6 +2,7 @@
 namespace Kaitai\Struct;
 
 use Kaitai\Struct\Error\EOFError;
+use Kaitai\Struct\Error\NoTerminatorFoundError;
 use Kaitai\Struct\Error\NotSupportedPlatformError;
 use Kaitai\Struct\Error\RotateProcessError;
 use Kaitai\Struct\Error\ZlibProcessError;
@@ -283,7 +284,7 @@ class Stream {
         while (true) {
             if ($this->isEof()) {
                 if ($eosError) {
-                    throw new \RuntimeException("End of stream reached, but no terminator '$terminator' found");
+                    throw new NoTerminatorFoundError($terminator);
                 }
                 break;
             }
