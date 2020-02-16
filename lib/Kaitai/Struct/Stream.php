@@ -1,7 +1,7 @@
 <?php
 namespace Kaitai\Struct;
 
-use Kaitai\Struct\Error\EOFError;
+use Kaitai\Struct\Error\EndOfStreamError;
 use Kaitai\Struct\Error\NoTerminatorFoundError;
 use Kaitai\Struct\Error\NotSupportedPlatformError;
 use Kaitai\Struct\Error\RotateProcessError;
@@ -267,7 +267,7 @@ class Stream {
         $bytes = fread($this->stream, $numberOfBytes);
         $n = strlen($bytes);
         if ($n < $numberOfBytes) {
-            throw new EOFError($numberOfBytes, $n);
+            throw new EndOfStreamError($numberOfBytes, $n);
         }
         return $bytes;
     }

@@ -1,7 +1,7 @@
 <?php
 namespace KaitaiTest\Struct;
 
-use Kaitai\Struct\Error\EOFError;
+use Kaitai\Struct\Error\EndOfStreamError;
 use Kaitai\Struct\Stream;
 use PHPUnit\Framework\TestCase;
 
@@ -392,7 +392,7 @@ class StreamTest extends TestCase {
         try {
             $stream->ensureFixedContents($bytes);
             $this->fail();
-        } catch (EOFError $e) {
+        } catch (EndOfStreamError $e) {
             $this->assertEquals('Requested ' . strlen($bytes) . ' bytes, but only 0 bytes available', $e->getMessage());
         }
     }

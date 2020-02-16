@@ -1,7 +1,7 @@
 <?php
 namespace Kaitai\Struct\Error;
 
-class EOFError extends \RuntimeException {
+class EndOfStreamError extends \RuntimeException {
     protected $bytesReq;
     protected $bytesAvail;
 
