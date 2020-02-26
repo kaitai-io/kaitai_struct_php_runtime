@@ -2,6 +2,7 @@
 namespace KaitaiTest\Struct;
 
 use Kaitai\Struct\Error\EndOfStreamError;
+use Kaitai\Struct\Error\KaitaiError;
 use Kaitai\Struct\Stream;
 use PHPUnit\Framework\TestCase;
 
@@ -460,7 +461,7 @@ class StreamTest extends TestCase {
         try {
             $this->assertNull($stream->seek($pos));
             $this->fail();
-        } catch (\RuntimeException $e) {
+        } catch (KaitaiError $e) {
             $this->assertRegExp("~The position \\($pos\\) must be less than the size \\(\\d+\\) of the stream~s", $e->getMessage());
         }
     }

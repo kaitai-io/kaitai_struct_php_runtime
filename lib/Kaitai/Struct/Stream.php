@@ -2,6 +2,7 @@
 namespace Kaitai\Struct;
 
 use Kaitai\Struct\Error\EndOfStreamError;
+use Kaitai\Struct\Error\KaitaiError;
 use Kaitai\Struct\Error\NoTerminatorFoundError;
 use Kaitai\Struct\Error\NotSupportedPlatformError;
 use Kaitai\Struct\Error\RotateProcessError;
@@ -54,7 +55,7 @@ class Stream {
         } else {
             // restore stream position, 1 byte back
             if (fseek($this->stream, -1, SEEK_CUR) !== 0) {
-                throw new \RuntimeException("Unable to roll back after reading a byte in isEof");
+                throw new KaitaiError("Unable to roll back after reading a byte in isEof");
             }
             return false;
         }
@@ -66,11 +67,11 @@ class Stream {
     public function seek(int $pos)/*: void */ {
         $size = $this->size();
         if ($pos > $size) {
-            throw new \RuntimeException("The position ($pos) must be less than the size ($size) of the stream");
+            throw new KaitaiError("The position ($pos) must be less than the size ($size) of the stream");
         }
         $res = fseek($this->stream, $pos);
         if ($res !== 0) {
-            throw new \RuntimeException("Unable to set new position");
+            throw new KaitaiError("Unable to set new position");
         }
     }
 

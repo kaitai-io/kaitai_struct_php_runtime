@@ -1,7 +1,7 @@
 <?php
 namespace Kaitai\Struct\Error;
 
-class NoTerminatorFoundError extends \RuntimeException {
+class NoTerminatorFoundError extends KaitaiError {
     protected $terminator;
 
     public function __construct(string $terminator) {

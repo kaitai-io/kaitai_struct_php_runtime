@@ -1,4 +1,4 @@
 <?php
 namespace Kaitai\Struct\Error;
 
-class NotSupportedPlatformError extends \RuntimeException {}
+class NotSupportedPlatformError extends KaitaiError {}

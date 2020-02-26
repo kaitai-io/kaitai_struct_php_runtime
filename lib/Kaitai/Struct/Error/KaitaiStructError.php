@@ -1,7 +1,7 @@
 <?php
 namespace Kaitai\Struct\Error;
 
-class KaitaiStructError extends \RuntimeException {
+class KaitaiStructError extends KaitaiError {
     protected $srcPath;
 
     public function __construct(string $msg, string $srcPath) {
