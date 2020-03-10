@@ -1,6 +1,13 @@
 <?php
 namespace Kaitai\Struct;
 
+use Kaitai\Struct\Error\EndOfStreamError;
+use Kaitai\Struct\Error\KaitaiError;
+use Kaitai\Struct\Error\NoTerminatorFoundError;
+use Kaitai\Struct\Error\NotSupportedPlatformError;
+use Kaitai\Struct\Error\RotateProcessError;
+use Kaitai\Struct\Error\ZlibProcessError;
+
 class Stream {
     protected $stream;
 
@@ -15,7 +22,7 @@ class Stream {
      */
     public function __construct($stream) {
         if (PHP_INT_SIZE !== 8) {
-            throw new \RuntimeException("Only 64-bit platform is implemented");
+            throw new NotSupportedPlatformError("Only 64-bit platform is implemented");
         }
         if (is_string($stream)) {
             $this->stream = fopen('php://memory', 'r+b');
@@ -48,7 +55,7 @@ class Stream {
         } else {
             // restore stream position, 1 byte back
             if (fseek($this->stream, -1, SEEK_CUR) !== 0) {
-                throw new \RuntimeException("Unable to roll back after reading a byte in isEof");
+                throw new KaitaiError("Unable to roll back after reading a byte in isEof");
             }
             return false;
         }
@@ -60,11 +67,11 @@ class Stream {
     public function seek(int $pos)/*: void */ {
         $size = $this->size();
         if ($pos > $size) {
-            throw new \RuntimeException("The position ($pos) must be less than the size ($size) of the stream");
+            throw new KaitaiError("The position ($pos) must be less than the size ($size) of the stream");
         }
         $res = fseek($this->stream, $pos);
         if ($res !== 0) {
-            throw new \RuntimeException("Unable to set new position");
+            throw new KaitaiError("Unable to set new position");
         }
     }
 
@@ -261,7 +268,7 @@ class Stream {
         $bytes = fread($this->stream, $numberOfBytes);
         $n = strlen($bytes);
         if ($n < $numberOfBytes) {
-            throw new \RuntimeException("Requested $numberOfBytes bytes, but got only $n bytes");
+            throw new EndOfStreamError($numberOfBytes, $n);
         }
         return $bytes;
     }
@@ -278,7 +285,7 @@ class Stream {
         while (true) {
             if ($this->isEof()) {
                 if ($eosError) {
-                    throw new \RuntimeException("End of stream reached, but no terminator '$terminator' found");
+                    throw new NoTerminatorFoundError($terminator);
                 }
                 break;
             }
@@ -297,6 +304,9 @@ class Stream {
         return $bytes;
     }
 
+    /**
+     * @deprecated Unused since Kaitai Struct Compiler v0.9+ - compatibility with older versions
+     */
     public function ensureFixedContents(string $expectedBytes): string {
         $length = strlen($expectedBytes);
         $bytes = $this->readBytes($length);
@@ -367,7 +377,7 @@ class Stream {
 
     public static function processRotateLeft(string $bytes, int $amount, int $groupSize): string {
         if ($groupSize !== 1) {
-            throw new \RuntimeException("Unable to rotate group of $groupSize bytes yet");
+            throw new RotateProcessError("Unable to rotate group of $groupSize bytes yet");
         }
         $rotated = '';
         for ($i = 0, $n = strlen($bytes); $i < $n; $i++) {
@@ -382,7 +392,7 @@ class Stream {
         if (false === $uncompressed) {
             $error = error_get_last();
             error_clear_last();
-            throw new \RuntimeException($error['message']);
+            throw new ZlibProcessError($error['message']);
         }
         return $uncompressed;
     }

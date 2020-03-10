@@ -1,6 +1,8 @@
 <?php
 namespace KaitaiTest\Struct;
 
+use Kaitai\Struct\Error\EndOfStreamError;
+use Kaitai\Struct\Error\KaitaiError;
 use Kaitai\Struct\Stream;
 use PHPUnit\Framework\TestCase;
 
@@ -343,7 +345,7 @@ class StreamTest extends TestCase {
         // @TODO: test NAN, -INF, INF, -0.0, 0.0
     }
 
-    public function testReadBytes_Сonsistently() {
+    public function testReadBytes_Consistently() {
         $bytes = "\x03\xef\xa4\xb9";
         $stream = new Stream($bytes);
         $this->assertEquals("\x03\xef", $stream->readBytes(2));
@@ -391,8 +393,8 @@ class StreamTest extends TestCase {
         try {
             $stream->ensureFixedContents($bytes);
             $this->fail();
-        } catch (\RuntimeException $e) {
-            $this->assertEquals('Requested ' . strlen($bytes) . ' bytes, but got only 0 bytes', $e->getMessage());
+        } catch (EndOfStreamError $e) {
+            $this->assertEquals('Requested ' . strlen($bytes) . ' bytes, but only 0 bytes available', $e->getMessage());
         }
     }
 
@@ -459,7 +461,7 @@ class StreamTest extends TestCase {
         try {
             $this->assertNull($stream->seek($pos));
             $this->fail();
-        } catch (\RuntimeException $e) {
+        } catch (KaitaiError $e) {
             $this->assertRegExp("~The position \\($pos\\) must be less than the size \\(\\d+\\) of the stream~s", $e->getMessage());
         }
     }
