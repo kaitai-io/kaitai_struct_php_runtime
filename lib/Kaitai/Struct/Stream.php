@@ -223,7 +223,7 @@ class Stream {
         $this->bitsLeft = 0;
     }
 
-    public function readBitsInt(int $n): int {
+    public function readBitsIntBe(int $n): int {
         $bitsNeeded = $n - $this->bitsLeft;
         if ($bitsNeeded > 0) {
             // 1 bit  => 1 byte
@@ -253,6 +253,41 @@ class Stream {
 
         return $res;
     }
+
+    /**
+     * Unused since Kaitai Struct Compiler v0.9+ - compatibility with older versions
+     *
+     * @deprecated use {@link Stream::readBitsIntBe()} instead
+     */
+    public function readBitsInt(int $n): int {
+        return $this->readBitsIntBe($n);
+    }
+
+    public function readBitsIntLe(int $n): int {
+        $bitsNeeded = $n - $this->bitsLeft;
+        if ($bitsNeeded > 0) {
+            // 1 bit  => 1 byte
+            // 8 bits => 1 byte
+            // 9 bits => 2 bytes
+            $bytesNeeded = intdiv($bitsNeeded - 1, 8) + 1;
+            $buf = $this->readBytes($bytesNeeded);
+            for ($i = 0; $i < $bytesNeeded; $i++) {
+                $b = ord($buf[$i]);
+                $this->bits |= ($b << $this->bitsLeft);
+                $this->bitsLeft += 8;
+            }
+        }
+
+        // raw mask with required number of 1s, starting from lowest bit
+        $mask = (1 << $n) - 1;
+        // derive reading result
+        $res = $this->bits & $mask;
+        // remove bottom bits that we've just read by shifting
+        $this->bits >>= $n;
+        $this->bitsLeft -= $n;
+
+        return $res;
+      }
 
     /**************************************************************************
      * Byte arrays
