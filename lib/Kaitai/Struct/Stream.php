@@ -240,7 +240,7 @@ class Stream {
         }
 
         // raw mask with required number of 1s, starting from lowest bit
-        $mask = (1 << $n) - 1;
+        $mask = $this->getMaskOnes($n);
         // shift $this->bits to align the highest bits with the mask & derive reading result
         $shiftBits = $this->bitsLeft - $n;
         $res = ($this->bits >> $shiftBits) & $mask;
@@ -277,15 +277,25 @@ class Stream {
         }
 
         // raw mask with required number of 1s, starting from lowest bit
-        $mask = (1 << $n) - 1;
+        $mask = $this->getMaskOnes($n);
         // derive reading result
         $res = $this->bits & $mask;
         // remove bottom bits that we've just read by shifting
-        $this->bits >>= $n;
+        $this->bits = $this->zeroFillRightShift($this->bits, $n);
         $this->bitsLeft -= $n;
 
         return $res;
-      }
+    }
+
+    private static function getMaskOnes(int $n): int {
+        // 1. (1 << 63) === PHP_INT_MIN (and yes, it is negative, because PHP uses signed 64-bit ints on 64-bit system),
+        //    so (1 << 63) - 1 gets converted to float and loses precision (leading to incorrect result)
+        // 2. (1 << 64) - 1 works fine, because (1 << 64) === 0 (it overflows) and -1 is exactly what we want
+        //    (`php -r "var_dump(decbin(-1));"` => string(64) "111...11")
+        $bit = 1 << $n;
+        return $bit === PHP_INT_MIN ? ~$bit : $bit - 1;
+    }
+
 
     /**************************************************************************
      * Byte arrays
@@ -469,6 +479,13 @@ class Stream {
 
     private static function decodeSignedInt(int $x, int $mask): int {
         return ($x & ~$mask) - ($x & $mask);
+    }
+
+    // From https://stackoverflow.com/a/14428473, modified
+    private static function zeroFillRightShift(int $a, int $b): int {
+        $res = $a >> $b;
+        if ($a >= 0 || $b === 0) return $res;
+        return $res & ~(PHP_INT_MIN >> ($b - 1));
     }
 
     private function decodeSinglePrecisionFloat(int $bits): float {
