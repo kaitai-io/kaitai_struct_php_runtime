@@ -13,7 +13,6 @@ class Stream {
 
     const SIGN_MASK_16 = 0x8000;         // (1 << (16 - 1));
     const SIGN_MASK_32 = 0x80000000;     // (1 << (32 - 1));
-    const SIGN_MASK_64 = 0x800000000000; // (1 << (64 - 1));
 
     private $bits, $bitsLeft;
 
