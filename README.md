@@ -1,5 +1,9 @@
 # Kaitai Struct: runtime library for PHP
 
+[![Packagist](https://img.shields.io/packagist/v/kaitai-io/kaitai_struct_php_runtime)](https://packagist.org/packages/kaitai-io/kaitai_struct_php_runtime)
+[![Packagist downloads](https://img.shields.io/packagist/dm/kaitai-io/kaitai_struct_php_runtime)](https://packagist.org/packages/kaitai-io/kaitai_struct_php_runtime/stats#:~:text=Last%2030%20days)
+[![PHP version](https://img.shields.io/packagist/php-v/kaitai-io/kaitai_struct_php_runtime)](https://packagist.org/packages/kaitai-io/kaitai_struct_php_runtime#:~:text=php%3A)
+
 This library implements Kaitai Struct API for PHP.
 
 Kaitai Struct is a declarative language used for describe various binary
