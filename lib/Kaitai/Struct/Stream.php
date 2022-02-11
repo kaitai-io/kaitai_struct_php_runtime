@@ -101,11 +101,11 @@ class Stream {
     // Big-endian
 
     public function readS2be(): int {
-        return $this->decodeSignedInt($this->readU2be(), self::SIGN_MASK_16);
+        return self::decodeSignedInt($this->readU2be(), self::SIGN_MASK_16);
     }
 
     public function readS4be(): int {
-        return $this->decodeSignedInt($this->readU4be(), self::SIGN_MASK_32);
+        return self::decodeSignedInt($this->readU4be(), self::SIGN_MASK_32);
     }
 
     public function readS8be(): int {
@@ -119,11 +119,11 @@ class Stream {
     // Little-endian
 
     public function readS2le(): int {
-        return $this->decodeSignedInt($this->readU2le(), self::SIGN_MASK_16);
+        return self::decodeSignedInt($this->readU2le(), self::SIGN_MASK_16);
     }
 
     public function readS4le(): int {
-        return $this->decodeSignedInt($this->readU4le(), self::SIGN_MASK_32);
+        return self::decodeSignedInt($this->readU4le(), self::SIGN_MASK_32);
     }
 
     public function readS8le(): int {

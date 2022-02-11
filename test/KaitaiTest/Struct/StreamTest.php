@@ -403,10 +403,10 @@ class StreamTest extends TestCase {
 
         $bytes = "\xab\x48\xf1\x04";
 
-        $xored = $stream->processXorOne($bytes, "\x3f"); // 63 int
+        $xored = $stream::processXorOne($bytes, "\x3f"); // 63 int
         $this->assertEquals("\x94\x77\xce\x3b", $xored);
 
-        $xored = $stream->processXorOne($bytes, 63);
+        $xored = $stream::processXorOne($bytes, 63);
         $this->assertEquals("\x94\x77\xce\x3b", $xored);
     }
 
@@ -414,14 +414,14 @@ class StreamTest extends TestCase {
         $stream = $this->stream();
         $bytes = "\xab\x48\xf1\x04";
         $key = "\x3f\x2d\xa5";
-        $xored = $stream->processXorMany($bytes, $key);
+        $xored = $stream::processXorMany($bytes, $key);
         $this->assertEquals("\x94\x65\x54\x3b", $xored);
     }
 
     public function testProcessRotateLeft() {
         $stream = $this->stream();
         $bytes = "\x17\x22\xc9\x04\x06\x13";
-        $rotated = $stream->processRotateLeft($bytes, 3, 1);
+        $rotated = $stream::processRotateLeft($bytes, 3, 1);
         $this->assertEquals("\xb8\x11\x4e\x20\x30\x98", $rotated);
     }
 
@@ -429,7 +429,7 @@ class StreamTest extends TestCase {
         $stream = $this->stream();
         $string = "Compress me";
         $compressed = gzcompress($string);
-        $uncompressed = $stream->processZlib($compressed);
+        $uncompressed = $stream::processZlib($compressed);
         $this->assertEquals($string, $uncompressed);
     }
 
