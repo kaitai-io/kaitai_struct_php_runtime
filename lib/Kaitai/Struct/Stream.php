@@ -14,7 +14,8 @@ class Stream {
     const SIGN_MASK_16 = 0x8000;         // (1 << (16 - 1));
     const SIGN_MASK_32 = 0x80000000;     // (1 << (32 - 1));
 
-    private $bits, $bitsLeft;
+    private $bitsLeft;
+    private $bits;
 
     /**
      * @param resource|string $stream
@@ -218,34 +219,34 @@ class Stream {
      **************************************************************************/
 
     public function alignToByte()/*: void */ {
-        $this->bits = 0;
         $this->bitsLeft = 0;
+        $this->bits = 0;
     }
 
     public function readBitsIntBe(int $n): int {
+        $res = 0;
+
         $bitsNeeded = $n - $this->bitsLeft;
+        $this->bitsLeft = -$bitsNeeded & 7; // `-$bitsNeeded mod 8`
+
         if ($bitsNeeded > 0) {
             // 1 bit  => 1 byte
             // 8 bits => 1 byte
             // 9 bits => 2 bytes
-            $bytesNeeded = intdiv($bitsNeeded - 1, 8) + 1;
+            $bytesNeeded = (($bitsNeeded - 1) >> 3) + 1; // `ceil($bitsNeeded / 8)` (NB: `x >> 3` is `floor(x / 8)`)
             $buf = $this->readBytes($bytesNeeded);
             for ($i = 0; $i < $bytesNeeded; $i++) {
-                $b = ord($buf[$i]);
-                $this->bits <<= 8;
-                $this->bits |= $b;
-                $this->bitsLeft += 8;
+                $res = $res << 8 | ord($buf[$i]);
             }
+
+            $newBits = $res;
+            $res = self::zeroFillRightShift($res, $this->bitsLeft) | $this->bits << $bitsNeeded;
+            $this->bits = $newBits; // will be masked at the end of the function
+        } else {
+            $res = self::zeroFillRightShift($this->bits, -$bitsNeeded); // shift unneeded bits out
         }
 
-        // raw mask with required number of 1s, starting from lowest bit
-        $mask = $this->getMaskOnes($n);
-        // shift $this->bits to align the highest bits with the mask & derive reading result
-        $shiftBits = $this->bitsLeft - $n;
-        $res = ($this->bits >> $shiftBits) & $mask;
-        // clear top bits that we've just read => AND with 1s
-        $this->bitsLeft -= $n;
-        $mask = (1 << $this->bitsLeft) - 1;
+        $mask = (1 << $this->bitsLeft) - 1; // `bitsLeft` is in range 0..7, so `(1 << 63)` does not have to be considered
         $this->bits &= $mask;
 
         return $res;
@@ -261,28 +262,31 @@ class Stream {
     }
 
     public function readBitsIntLe(int $n): int {
+        $res = 0;
         $bitsNeeded = $n - $this->bitsLeft;
+
         if ($bitsNeeded > 0) {
             // 1 bit  => 1 byte
             // 8 bits => 1 byte
             // 9 bits => 2 bytes
-            $bytesNeeded = intdiv($bitsNeeded - 1, 8) + 1;
+            $bytesNeeded = (($bitsNeeded - 1) >> 3) + 1; // `ceil($bitsNeeded / 8)` (NB: `x >> 3` is `floor(x / 8)`)
             $buf = $this->readBytes($bytesNeeded);
             for ($i = 0; $i < $bytesNeeded; $i++) {
-                $b = ord($buf[$i]);
-                $this->bits |= ($b << $this->bitsLeft);
-                $this->bitsLeft += 8;
+                $res |= ord($buf[$i]) << ($i * 8);
             }
+
+            $newBits = self::zeroFillRightShift($res, $bitsNeeded);
+            $res = $res << $this->bitsLeft | $this->bits;
+            $this->bits = $newBits;
+        } else {
+            $res = $this->bits;
+            $this->bits = self::zeroFillRightShift($this->bits, $n);
         }
 
-        // raw mask with required number of 1s, starting from lowest bit
-        $mask = $this->getMaskOnes($n);
-        // derive reading result
-        $res = $this->bits & $mask;
-        // remove bottom bits that we've just read by shifting
-        $this->bits = $this->zeroFillRightShift($this->bits, $n);
-        $this->bitsLeft -= $n;
+        $this->bitsLeft = -$bitsNeeded & 7; // `-$bitsNeeded mod 8`
 
+        $mask = self::getMaskOnes($n);
+        $res &= $mask;
         return $res;
     }
 
@@ -290,7 +294,7 @@ class Stream {
         // 1. (1 << 63) === PHP_INT_MIN (and yes, it is negative, because PHP uses signed 64-bit ints on 64-bit system),
         //    so (1 << 63) - 1 gets converted to float and loses precision (leading to incorrect result)
         // 2. (1 << 64) - 1 works fine, because (1 << 64) === 0 (it overflows) and -1 is exactly what we want
-        //    (`php -r "var_dump(decbin(-1));"` => string(64) "111...11")
+        //    (`php -r 'var_dump(decbin(-1));'` => string(64) "111...11")
         $bit = 1 << $n;
         return $bit === PHP_INT_MIN ? ~$bit : $bit - 1;
     }
@@ -484,7 +488,7 @@ class Stream {
     private static function zeroFillRightShift(int $a, int $b): int {
         $res = $a >> $b;
         if ($a >= 0 || $b === 0) return $res;
-        return $res & ~(PHP_INT_MIN >> ($b - 1));
+        return $res & (PHP_INT_MAX >> ($b - 1));
     }
 
     private function decodeSinglePrecisionFloat(int $bits): float {
