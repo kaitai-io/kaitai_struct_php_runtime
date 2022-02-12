@@ -1,10 +1,8 @@
 {
     "name": "kaitai-io/kaitai_struct_php_runtime",
-    "description": "Kaitai Struct API for PHP",
+    "description": "Kaitai Struct: runtime library for PHP",
+    "license": "MIT",
     "type": "library",
-    "license": [
-        "MIT"
-    ],
     "require": {
         "php": "^7.0"
     },
