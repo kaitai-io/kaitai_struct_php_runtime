@@ -4,10 +4,14 @@
     "license": "MIT",
     "type": "library",
     "require": {
-        "php": "^7.0"
+        "php": "^7.0",
+        "ext-iconv": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^6.0"
+    },
+    "suggest": {
+        "ext-zlib": "for `process: zlib` support"
     },
     "autoload": {
         "psr-4": {
