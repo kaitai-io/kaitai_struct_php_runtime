@@ -3,6 +3,11 @@
     "description": "Kaitai Struct: runtime library for PHP",
     "license": "MIT",
     "type": "library",
+    "homepage": "https://github.com/kaitai-io/kaitai_struct_php_runtime",
+    "support": {
+        "issues": "https://github.com/kaitai-io/kaitai_struct_php_runtime/issues",
+        "chat": "https://gitter.im/kaitai_struct/Lobby"
+    },
     "require": {
         "php": "^7.0",
         "ext-iconv": "*"
