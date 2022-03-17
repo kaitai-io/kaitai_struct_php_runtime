@@ -111,9 +111,8 @@ class Stream {
 
     public function readS8be(): int {
         $bytes = $this->readBytes(8);
-        $highDw = unpack('N', substr($bytes, 0, 4))[1];
-        $lowDw = unpack('N', substr($bytes, 4))[1];
-        return ($highDw << 32) + $lowDw;
+        list(, $highDw, $lowDw) = unpack("N2", $bytes);
+        return ($highDw << 32) | $lowDw;
     }
 
     // --
@@ -129,9 +128,8 @@ class Stream {
 
     public function readS8le(): int {
         $bytes = $this->readBytes(8);
-        $lowDw = unpack('V', substr($bytes, 0, 4))[1];
-        $highDw = unpack('V', substr($bytes, 4))[1];
-        return ($highDw << 32) + $lowDw;
+        list(, $lowDw, $highDw) = unpack("V2", $bytes);
+        return ($highDw << 32) | $lowDw;
     }
 
     /**************************************************************************
