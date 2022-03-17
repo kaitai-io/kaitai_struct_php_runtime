@@ -403,11 +403,11 @@ class Stream {
      */
     public static function processXorOne(string $bytes, $key): string {
         if (is_string($key)) {
-            $key = self::strByteToUint($key);
+            $key = ord($key);
         }
         $xored = '';
         for ($i = 0, $n = strlen($bytes); $i < $n; $i++) {
-            $xored .= chr(self::strByteToUint($bytes[$i]) ^ $key);
+            $xored .= chr(ord($bytes[$i]) ^ $key);
         }
         return $xored;
     }
@@ -416,7 +416,7 @@ class Stream {
         $keyLength = strlen($key);
         $xored = '';
         for ($i = 0, $j = 0, $n = strlen($bytes); $i < $n; $i++, $j = ($j + 1) % $keyLength) {
-            $xored .= chr(self::strByteToUint($bytes[$i]) ^ self::strByteToUint($key[$j]));
+            $xored .= chr(ord($bytes[$i]) ^ ord($key[$j]));
         }
         return $xored;
     }
@@ -427,7 +427,7 @@ class Stream {
         }
         $rotated = '';
         for ($i = 0, $n = strlen($bytes); $i < $n; $i++) {
-            $byte = self::strByteToUint($bytes[$i]);
+            $byte = ord($bytes[$i]);
             $rotated .= chr(($byte << $amount) | ($byte >> (8 - $amount)));
         }
         return $rotated;
@@ -569,10 +569,5 @@ class Stream {
 
         // $exponent is not either 0 or 2047.
         return $sign * 2 ** ($exponent - 1023) * (1 + $fractionToFloat($fraction));
-    }
-
-    private static function strByteToUint(string $byte): int {
-        // May be just ord()??
-        return unpack("C", $byte)[1];
     }
 }
