@@ -35,34 +35,34 @@ class StreamTest extends TestCase {
         $bytes = "\x80\xff\x00\x7f\xfa\x0f\xad\xe5\x22\x11";
         $stream = new Stream($bytes);
 
-        $this->assertEquals(-128, $stream->readS1());
+        $this->assertSame(-128, $stream->readS1());
 
         $stream->seek(1);
-        $this->assertEquals(-1, $stream->readS1());
+        $this->assertSame(-1, $stream->readS1());
 
         $stream->seek(2);
-        $this->assertEquals(0, $stream->readS1());
+        $this->assertSame(0, $stream->readS1());
 
         $stream->seek(3);
-        $this->assertEquals(127, $stream->readS1());
+        $this->assertSame(127, $stream->readS1());
 
         $stream->seek(4);
-        $this->assertEquals(-6, $stream->readS1());
+        $this->assertSame(-6, $stream->readS1());
 
         $stream->seek(5);
-        $this->assertEquals(15, $stream->readS1());
+        $this->assertSame(15, $stream->readS1());
 
         $stream->seek(6);
-        $this->assertEquals(-83, $stream->readS1());
+        $this->assertSame(-83, $stream->readS1());
 
         $stream->seek(7);
-        $this->assertEquals(-27, $stream->readS1());
+        $this->assertSame(-27, $stream->readS1());
 
         $stream->seek(8);
-        $this->assertEquals(34, $stream->readS1());
+        $this->assertSame(34, $stream->readS1());
 
         $stream->seek(9);
-        $this->assertEquals(17, $stream->readS1());
+        $this->assertSame(17, $stream->readS1());
     }
 
     public function testS2be() {
@@ -72,16 +72,16 @@ class StreamTest extends TestCase {
             . "\x7f\xff";
         $stream = new Stream($bytes);
 
-        $this->assertEquals(-32768, $stream->readS2be());
+        $this->assertSame(-32768, $stream->readS2be());
 
         $stream->seek(2);
-        $this->assertEquals(-1, $stream->readS2be());
+        $this->assertSame(-1, $stream->readS2be());
 
         $stream->seek(4);
-        $this->assertEquals(0, $stream->readS2be());
+        $this->assertSame(0, $stream->readS2be());
 
         $stream->seek(6);
-        $this->assertEquals(32767, $stream->readS2be());
+        $this->assertSame(32767, $stream->readS2be());
     }
 
     public function testS4be() {
@@ -92,16 +92,16 @@ class StreamTest extends TestCase {
 
         $stream = new Stream($bytes);
 
-        $this->assertEquals(-2147483648, $stream->readS4be());
+        $this->assertSame(-2147483648, $stream->readS4be());
 
         $stream->seek(4);
-        $this->assertEquals(-1, $stream->readS4be());
+        $this->assertSame(-1, $stream->readS4be());
 
         $stream->seek(8);
-        $this->assertEquals(0, $stream->readS4be());
+        $this->assertSame(0, $stream->readS4be());
 
         $stream->seek(12);
-        $this->assertEquals(2147483647, $stream->readS4be());
+        $this->assertSame(2147483647, $stream->readS4be());
     }
 
     public function testS8be() {
@@ -111,16 +111,16 @@ class StreamTest extends TestCase {
             . "\x7f\xff\xff\xff\xff\xff\xff\xff";
         $stream = new Stream($bytes);
 
-        $this->assertEquals(-9223372036854775808, $stream->readS8be());
+        $this->assertSame(-9223372036854775807 - 1, $stream->readS8be());
 
         $stream->seek(8);
-        $this->assertEquals(-1, $stream->readS8be());
+        $this->assertSame(-1, $stream->readS8be());
         
         $stream->seek(16);
-        $this->assertEquals(0, $stream->readS8be());
+        $this->assertSame(0, $stream->readS8be());
         
         $stream->seek(24);
-        $this->assertEquals(9223372036854775807, $stream->readS8be());
+        $this->assertSame(9223372036854775807, $stream->readS8be());
     }
 
     public function testS2le() {
@@ -130,16 +130,16 @@ class StreamTest extends TestCase {
             . "\xff\x7f";
         $stream = new Stream($bytes);
 
-        $this->assertEquals(-32768, $stream->readS2le());
+        $this->assertSame(-32768, $stream->readS2le());
 
         $stream->seek(2);
-        $this->assertEquals(-1, $stream->readS2le());
+        $this->assertSame(-1, $stream->readS2le());
 
         $stream->seek(4);
-        $this->assertEquals(0, $stream->readS2le());
+        $this->assertSame(0, $stream->readS2le());
 
         $stream->seek(6);
-        $this->assertEquals(32767, $stream->readS2le());
+        $this->assertSame(32767, $stream->readS2le());
     }
 
     public function testS4le() {
@@ -149,16 +149,16 @@ class StreamTest extends TestCase {
             . "\xff\xff\xff\x7f";
         $stream = new Stream($bytes);
 
-        $this->assertEquals(-2147483648, $stream->readS4le());
+        $this->assertSame(-2147483648, $stream->readS4le());
 
         $stream->seek(4);
-        $this->assertEquals(-1, $stream->readS4le());
+        $this->assertSame(-1, $stream->readS4le());
 
         $stream->seek(8);
-        $this->assertEquals(0, $stream->readS4le());
+        $this->assertSame(0, $stream->readS4le());
 
         $stream->seek(12);
-        $this->assertEquals(2147483647, $stream->readS4le());
+        $this->assertSame(2147483647, $stream->readS4le());
     }
 
     public function testS8le() {
@@ -168,49 +168,49 @@ class StreamTest extends TestCase {
             . "\xff\xff\xff\xff\xff\xff\xff\x7f";
         $stream = new Stream($bytes);
 
-        $this->assertEquals(-9223372036854775808, $stream->readS8le());
+        $this->assertSame(-9223372036854775807 - 1, $stream->readS8le());
 
         $stream->seek(8);
-        $this->assertEquals(-1, $stream->readS8le());
+        $this->assertSame(-1, $stream->readS8le());
 
         $stream->seek(16);
-        $this->assertEquals(0, $stream->readS8le());
+        $this->assertSame(0, $stream->readS8le());
 
         $stream->seek(24);
-        $this->assertEquals(9223372036854775807, $stream->readS8le());
+        $this->assertSame(9223372036854775807, $stream->readS8le());
     }
 
     public function testU1() {
         $bytes = "\x80\xff\x00\x7f\xfa\x0f\xad\xe5\x22\x11";
         $stream = new Stream($bytes);
-        $this->assertEquals(128, $stream->readU1());
+        $this->assertSame(128, $stream->readU1());
 
         $stream->seek(1);
-        $this->assertEquals(255, $stream->readU1());
+        $this->assertSame(255, $stream->readU1());
 
         $stream->seek(2);
-        $this->assertEquals(0, $stream->readU1());
+        $this->assertSame(0, $stream->readU1());
 
         $stream->seek(3);
-        $this->assertEquals(127, $stream->readU1());
+        $this->assertSame(127, $stream->readU1());
 
         $stream->seek(4);
-        $this->assertEquals(250, $stream->readU1());
+        $this->assertSame(250, $stream->readU1());
 
         $stream->seek(5);
-        $this->assertEquals(15, $stream->readU1());
+        $this->assertSame(15, $stream->readU1());
 
         $stream->seek(6);
-        $this->assertEquals(173, $stream->readU1());
+        $this->assertSame(173, $stream->readU1());
 
         $stream->seek(7);
-        $this->assertEquals(229, $stream->readU1());
+        $this->assertSame(229, $stream->readU1());
 
         $stream->seek(8);
-        $this->assertEquals(34, $stream->readU1());
+        $this->assertSame(34, $stream->readU1());
 
         $stream->seek(9);
-        $this->assertEquals(17, $stream->readU1());
+        $this->assertSame(17, $stream->readU1());
     }
 
     public function dataForU2_LeBe() {
@@ -236,13 +236,13 @@ class StreamTest extends TestCase {
     public function testU2_LeBe(string $bytes, string $fn) {
         $stream = new Stream($bytes);
         $read = [$stream, $fn];
-        $this->assertEquals(0, call_user_func($read));
+        $this->assertSame(0, call_user_func($read));
 
         $stream->seek(2);
-        $this->assertEquals(4657, call_user_func($read));
+        $this->assertSame(4657, call_user_func($read));
 
         $stream->seek(4);
-        $this->assertEquals(65535, call_user_func($read));
+        $this->assertSame(65535, call_user_func($read));
     }
 
     public function dataForU4_LeBe() {
@@ -268,13 +268,13 @@ class StreamTest extends TestCase {
     public function testU4_LeBe(string $bytes, string $fn) {
         $stream = new Stream($bytes);
         $read = [$stream, $fn];
-        $this->assertEquals(0, call_user_func($read));
+        $this->assertSame(0, call_user_func($read));
 
         $stream->seek(4);
-        $this->assertEquals(251662848, call_user_func($read));
+        $this->assertSame(251662848, call_user_func($read));
 
         $stream->seek(8);
-        $this->assertEquals(4294967295, call_user_func($read));
+        $this->assertSame(4294967295, call_user_func($read));
     }
 
     public function dataForU8_LeBe() {
@@ -301,16 +301,16 @@ class StreamTest extends TestCase {
         $stream = new Stream($bytes);
         $read = [$stream, $fn];
 
-        $this->assertEquals(0, call_user_func($read));
+        $this->assertSame(0, call_user_func($read));
 
         $stream->seek(8);
-        $this->assertEquals(263883092656128, call_user_func($read));
+        $this->assertSame(263883092656128, call_user_func($read));
 
         $stream->seek(16);
         // PHP does not support the unsigned integers, so to represent the values > 2^63-1 we
         // need to use signed integers, which have the same internal representation as unsigned.
         // In this case it is 2^64 - 1
-        $this->assertEquals(-1, call_user_func($read));
+        $this->assertSame(-1, call_user_func($read));
     }
 
 
@@ -348,9 +348,9 @@ class StreamTest extends TestCase {
     public function testReadBytes_Consistently() {
         $bytes = "\x03\xef\xa4\xb9";
         $stream = new Stream($bytes);
-        $this->assertEquals("\x03\xef", $stream->readBytes(2));
-        $this->assertEquals("\xa4", $stream->readBytes(1));
-        $this->assertEquals("\xb9", $stream->readBytes(1));
+        $this->assertSame("\x03\xef", $stream->readBytes(2));
+        $this->assertSame("\xa4", $stream->readBytes(1));
+        $this->assertSame("\xb9", $stream->readBytes(1));
     }
 
     public function testReadBytes_Seek() {
@@ -358,35 +358,35 @@ class StreamTest extends TestCase {
         $stream = new Stream($bytes);
 
         $stream->seek(1);
-        $this->assertEquals("\xef\xa4", $stream->readBytes(2));
+        $this->assertSame("\xef\xa4", $stream->readBytes(2));
 
         $stream->seek(0);
-        $this->assertEquals("\x03\xef", $stream->readBytes(2));
+        $this->assertSame("\x03\xef", $stream->readBytes(2));
 
         $stream->seek(3);
-        $this->assertEquals("\xb9", $stream->readBytes(1));
+        $this->assertSame("\xb9", $stream->readBytes(1));
     }
 
     public function testReadBytesFull() {
         $bytes = "\x03\xef\xa4\xb9";
         $stream = new Stream($bytes);
 
-        $this->assertEquals($bytes, $stream->readBytesFull());
-        $this->assertEquals('', $stream->readBytesFull());
+        $this->assertSame($bytes, $stream->readBytesFull());
+        $this->assertSame('', $stream->readBytesFull());
 
         $stream->seek(0);
-        $this->assertEquals($bytes, $stream->readBytesFull());
-        $this->assertEquals('', $stream->readBytesFull());
+        $this->assertSame($bytes, $stream->readBytesFull());
+        $this->assertSame('', $stream->readBytesFull());
 
         $stream->seek(2);
-        $this->assertEquals("\xa4\xb9", $stream->readBytesFull());
-        $this->assertEquals('', $stream->readBytesFull());
+        $this->assertSame("\xa4\xb9", $stream->readBytesFull());
+        $this->assertSame('', $stream->readBytesFull());
     }
 
     public function testEnsureFixedContents() {
         $bytes = "\x3c\x3f\x70\x68\x70"; // "<?php"
         $stream = new Stream($bytes);
-        $this->assertEquals(
+        $this->assertSame(
             $bytes,
             $stream->ensureFixedContents($bytes)
         );
@@ -394,7 +394,7 @@ class StreamTest extends TestCase {
             $stream->ensureFixedContents($bytes);
             $this->fail();
         } catch (EndOfStreamError $e) {
-            $this->assertEquals('Requested ' . strlen($bytes) . ' bytes, but only 0 bytes available', $e->getMessage());
+            $this->assertSame('Requested ' . strlen($bytes) . ' bytes, but only 0 bytes available', $e->getMessage());
         }
     }
 
@@ -404,10 +404,10 @@ class StreamTest extends TestCase {
         $bytes = "\xab\x48\xf1\x04";
 
         $xored = $stream::processXorOne($bytes, "\x3f"); // 63 int
-        $this->assertEquals("\x94\x77\xce\x3b", $xored);
+        $this->assertSame("\x94\x77\xce\x3b", $xored);
 
         $xored = $stream::processXorOne($bytes, 63);
-        $this->assertEquals("\x94\x77\xce\x3b", $xored);
+        $this->assertSame("\x94\x77\xce\x3b", $xored);
     }
 
     public function testProcessXorMany() {
@@ -415,14 +415,14 @@ class StreamTest extends TestCase {
         $bytes = "\xab\x48\xf1\x04";
         $key = "\x3f\x2d\xa5";
         $xored = $stream::processXorMany($bytes, $key);
-        $this->assertEquals("\x94\x65\x54\x3b", $xored);
+        $this->assertSame("\x94\x65\x54\x3b", $xored);
     }
 
     public function testProcessRotateLeft() {
         $stream = $this->stream();
         $bytes = "\x17\x22\xc9\x04\x06\x13";
         $rotated = $stream::processRotateLeft($bytes, 3, 1);
-        $this->assertEquals("\xb8\x11\x4e\x20\x30\x98", $rotated);
+        $this->assertSame("\xb8\x11\x4e\x20\x30\x98", $rotated);
     }
 
     public function testProcessZlib() {
@@ -430,7 +430,7 @@ class StreamTest extends TestCase {
         $string = "Compress me";
         $compressed = gzcompress($string);
         $uncompressed = $stream::processZlib($compressed);
-        $this->assertEquals($string, $uncompressed);
+        $this->assertSame($string, $uncompressed);
     }
 
     private function memoryHandle() {
@@ -440,13 +440,13 @@ class StreamTest extends TestCase {
     private function checkStreamPositioning($stream, $fileSize) {
         $stream = new Stream($stream);
 
-        $this->assertEquals($fileSize, $stream->size());
-        $this->assertEquals(0, $stream->pos());
+        $this->assertSame($fileSize, $stream->size());
+        $this->assertSame(0, $stream->pos());
         $this->assertFalse($stream->isEof());
 
         $pos = 123;
         $this->assertNull($stream->seek($pos));
-        $this->assertEquals($pos, $stream->pos());
+        $this->assertSame($pos, $stream->pos());
         $this->assertFalse($stream->isEof());
 
         $this->assertSeekCallFailsForPos($stream, $fileSize + 3);
@@ -454,7 +454,7 @@ class StreamTest extends TestCase {
         $pos = $fileSize;
         $this->assertNull($stream->seek($pos));
         $this->assertTrue($stream->isEof());
-        $this->assertEquals($pos, $stream->pos());
+        $this->assertSame($pos, $stream->pos());
     }
 
     private function assertSeekCallFailsForPos(Stream $stream, $pos) {
