@@ -236,13 +236,13 @@ class StreamTest extends TestCase {
     public function testU2_LeBe(string $bytes, string $fn) {
         $stream = new Stream($bytes);
         $read = [$stream, $fn];
-        $this->assertSame(0, call_user_func($read));
+        $this->assertSame(0, $read());
 
         $stream->seek(2);
-        $this->assertSame(4657, call_user_func($read));
+        $this->assertSame(4657, $read());
 
         $stream->seek(4);
-        $this->assertSame(65535, call_user_func($read));
+        $this->assertSame(65535, $read());
     }
 
     public function dataForU4_LeBe() {
@@ -268,13 +268,13 @@ class StreamTest extends TestCase {
     public function testU4_LeBe(string $bytes, string $fn) {
         $stream = new Stream($bytes);
         $read = [$stream, $fn];
-        $this->assertSame(0, call_user_func($read));
+        $this->assertSame(0, $read());
 
         $stream->seek(4);
-        $this->assertSame(251662848, call_user_func($read));
+        $this->assertSame(251662848, $read());
 
         $stream->seek(8);
-        $this->assertSame(4294967295, call_user_func($read));
+        $this->assertSame(4294967295, $read());
     }
 
     public function dataForU8_LeBe() {
@@ -301,16 +301,16 @@ class StreamTest extends TestCase {
         $stream = new Stream($bytes);
         $read = [$stream, $fn];
 
-        $this->assertSame(0, call_user_func($read));
+        $this->assertSame(0, $read());
 
         $stream->seek(8);
-        $this->assertSame(263883092656128, call_user_func($read));
+        $this->assertSame(263883092656128, $read());
 
         $stream->seek(16);
         // PHP does not support the unsigned integers, so to represent the values > 2^63-1 we
         // need to use signed integers, which have the same internal representation as unsigned.
         // In this case it is 2^64 - 1
-        $this->assertSame(-1, call_user_func($read));
+        $this->assertSame(-1, $read());
     }
 
 
