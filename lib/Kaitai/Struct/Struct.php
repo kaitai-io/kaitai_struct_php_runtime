@@ -27,11 +27,11 @@ abstract class Struct {
         throw new \RuntimeException("Cannot access the property '" . get_class($this) . '::' . $name . "'");
     }
 
-    public function _parent(): Struct {
+    public function _parent(): ?Struct {
         return $this->_parent;
     }
 
-    public function _root(): Struct {
+    public function _root(): ?Struct {
         return $this->_root;
     }
 
