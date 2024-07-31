@@ -321,24 +321,24 @@ class Stream {
         return stream_get_contents($this->stream);
     }
 
-    public function readBytesTerm($terminator, bool $includeTerminator, bool $consumeTerminator, bool $eosError): string {
-        if (is_int($terminator)) {
-            $terminator = chr($terminator);
+    public function readBytesTerm($term, bool $includeTerm, bool $consumeTerm, bool $eosError): string {
+        if (is_int($term)) {
+            $term = chr($term);
         }
         $bytes = '';
         while (true) {
             if ($this->isEof()) {
                 if ($eosError) {
-                    throw new NoTerminatorFoundError($terminator);
+                    throw new NoTerminatorFoundError($term);
                 }
                 break;
             }
             $byte = $this->readBytes(1);
-            if ($byte === $terminator) {
-                if ($includeTerminator) {
+            if ($byte === $term) {
+                if ($includeTerm) {
                     $bytes .= $byte;
                 }
-                if (!$consumeTerminator) {
+                if (!$consumeTerm) {
                     $this->seek($this->pos() - 1);
                 }
                 break;
@@ -368,15 +368,15 @@ class Stream {
         return rtrim($bytes, $padByte);
     }
 
-    public static function bytesTerminate(string $bytes, $terminator, bool $includeTerminator): string {
-        if (is_int($terminator)) {
-            $terminator = chr($terminator);
+    public static function bytesTerminate(string $bytes, $term, bool $includeTerm): string {
+        if (is_int($term)) {
+            $term = chr($term);
         }
-        $newLen = strpos($bytes, $terminator);
+        $newLen = strpos($bytes, $term);
         if ($newLen === false) {
             return $bytes;
         } else {
-            if ($includeTerminator)
+            if ($includeTerm)
                 $newLen++;
             return substr($bytes, 0, $newLen);
         }
