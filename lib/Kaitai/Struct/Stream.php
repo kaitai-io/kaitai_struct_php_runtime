@@ -325,27 +325,27 @@ class Stream {
         if (is_int($term)) {
             $term = chr($term);
         }
-        $bytes = '';
+        $r = '';
         while (true) {
-            if ($this->isEof()) {
+            $c = fgetc($this->stream);
+            if ($c === false) {
                 if ($eosError) {
                     throw new NoTerminatorFoundError($term);
                 }
                 break;
             }
-            $byte = $this->readBytes(1);
-            if ($byte === $term) {
+            if ($c === $term) {
                 if ($includeTerm) {
-                    $bytes .= $byte;
+                    $r .= $c;
                 }
                 if (!$consumeTerm) {
                     $this->seek($this->pos() - 1);
                 }
                 break;
             }
-            $bytes .= $byte;
+            $r .= $c;
         }
-        return $bytes;
+        return $r;
     }
 
     /**
