@@ -304,8 +304,8 @@ class Stream {
 
     public function readBytes(int $numberOfBytes): string {
         // It is legitimate to ask for 0 bytes in Kaitai Struct API,
-        // but PHP's fread() considers this an error, so check &
-        // handle this case before fread()
+        // but PHP's fread() considers this an error, so check and
+        // handle this case before calling fread()
         if ($numberOfBytes == 0) {
             return '';
         }
@@ -348,6 +348,42 @@ class Stream {
         return $r;
     }
 
+    public function readBytesTermMulti(string $term, bool $includeTerm, bool $consumeTerm, bool $eosError): string {
+        $unitSize = strlen($term);
+
+        // PHP's fread() considers asking for 0 bytes an error, so check and
+        // handle this case before calling fread()
+        if ($unitSize === 0) {
+            return '';
+        }
+
+        $r = '';
+        while (true) {
+            $c = fread($this->stream, $unitSize);
+            if ($c === false) {
+                $c = '';
+            }
+            if (strlen($c) < $unitSize) {
+                if ($eosError) {
+                    throw new NoTerminatorFoundError($term);
+                }
+                $r .= $c;
+                break;
+            }
+            if ($c === $term) {
+                if ($includeTerm) {
+                    $r .= $c;
+                }
+                if (!$consumeTerm) {
+                    $this->seek($this->pos() - $unitSize);
+                }
+                break;
+            }
+            $r .= $c;
+        }
+        return $r;
+    }
+
     /**
      * @deprecated Unused since Kaitai Struct Compiler v0.9+ - compatibility with older versions
      */
@@ -379,6 +415,21 @@ class Stream {
             if ($includeTerm)
                 $newLen++;
             return substr($bytes, 0, $newLen);
+        }
+    }
+
+    public static function bytesTerminateMulti(string $bytes, string $term, bool $includeTerm): string {
+        $unitSize = strlen($term);
+        $searchIndex = strpos($bytes, $term);
+        while (true) {
+            if ($searchIndex === false) {
+                return $bytes;
+            }
+            $mod = $searchIndex % $unitSize;
+            if ($mod === 0) {
+                return substr($bytes, 0, $searchIndex + ($includeTerm ? $unitSize : 0));
+            }
+            $searchIndex = strpos($bytes, $term, $searchIndex + ($unitSize - $mod));
         }
     }
 
