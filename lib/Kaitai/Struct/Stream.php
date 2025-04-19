@@ -110,9 +110,16 @@ class Stream {
     }
 
     public function readS8be(): int {
-        $bytes = $this->readBytes(8);
-        list(, $highDw, $lowDw) = unpack("N2", $bytes);
-        return ($highDw << 32) | $lowDw;
+        // PHP does not support unsigned ints - all integers are signed. So
+        // readU8be() actually returns a *signed* 64-bit integer, which is
+        // exactly what we want here. See
+        // <https://www.php.net/manual/en/function.unpack.php#refsect1-function.unpack-notes>:
+        //
+        // > **Caution** Note that PHP internally stores integral values as
+        // > signed. If you unpack a large unsigned long and it is of the same
+        // > size as PHP internally stored values the result will be a negative
+        // > number even though unsigned unpacking was specified.
+        return $this->readU8be();
     }
 
     // --
@@ -127,9 +134,8 @@ class Stream {
     }
 
     public function readS8le(): int {
-        $bytes = $this->readBytes(8);
-        list(, $lowDw, $highDw) = unpack("V2", $bytes);
-        return ($highDw << 32) | $lowDw;
+        // See comment above in readS8be()
+        return $this->readU8le();
     }
 
     /**************************************************************************
