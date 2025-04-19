@@ -11,8 +11,8 @@ use Kaitai\Struct\Error\ZlibProcessError;
 class Stream {
     protected $stream;
 
-    const SIGN_MASK_16 = 0x8000;         // (1 << (16 - 1));
-    const SIGN_MASK_32 = 0x80000000;     // (1 << (32 - 1));
+    private const SIGN_MASK_16 = 0x8000;         // (1 << (16 - 1));
+    private const SIGN_MASK_32 = 0x80000000;     // (1 << (32 - 1));
 
     private $bitsLeft;
     private $bits;
