@@ -530,7 +530,8 @@ class Stream {
      **************************************************************************/
 
     private static function decodeSignedInt(int $x, int $mask): int {
-        return ($x & ~$mask) - ($x & $mask);
+        // See https://graphics.stanford.edu/~seander/bithacks.html#VariableSignExtend
+        return ($x ^ $mask) - $mask;
     }
 
     // From https://stackoverflow.com/a/14428473, modified
