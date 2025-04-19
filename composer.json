@@ -9,7 +9,7 @@
         "chat": "https://gitter.im/kaitai_struct/Lobby"
     },
     "require": {
-        "php": "^7.1 || ^8.0",
+        "php": "^7.1.1 || ^8.0",
         "ext-iconv": "*"
     },
     "require-dev": {

@@ -187,16 +187,14 @@ class Stream {
      * Single precision floating-point number
      */
     public function readF4be(): float {
-        $bits = $this->readU4be();
-        return $this->decodeSinglePrecisionFloat($bits);
+        return unpack("G", $this->readBytes(4))[1];
     }
 
     /**
      * Double precision floating-point number.
      */
     public function readF8be(): float {
-        $bits = $this->readU8be();
-        return $this->decodeDoublePrecisionFloat($bits);
+        return unpack("E", $this->readBytes(8))[1];
     }
 
     // ---
@@ -206,16 +204,14 @@ class Stream {
      * Single precision floating-point number.
      */
     public function readF4le(): float {
-        $bits = $this->readU4le();
-        return $this->decodeSinglePrecisionFloat($bits);
+        return unpack("g", $this->readBytes(4))[1];
     }
 
     /**
      * Double precision floating-point number.
      */
     public function readF8le(): float {
-        $bits = $this->readU8le();
-        return $this->decodeDoublePrecisionFloat($bits);
+        return unpack("e", $this->readBytes(8))[1];
     }
 
     /**************************************************************************
@@ -545,85 +541,5 @@ class Stream {
         $res = $a >> $b;
         if ($a >= 0 || $b === 0) return $res;
         return $res & (PHP_INT_MAX >> ($b - 1));
-    }
-
-    private function decodeSinglePrecisionFloat(int $bits): float {
-        $fractionToFloat = function (int $fraction): float {
-            $val = 0;
-            for ($i = 22, $j = 1; $i >= 0; $i--, $j++) {
-                $bit = ((1 << $i) & $fraction) >> $i;
-                $val += 2 ** (-$j) * $bit;
-            }
-            return $val;
-        };
-
-        // Sign - 31 bit, one bit
-        $sign = ($bits >> 31) == 0 ? 1 : -1;
-
-        // Exponent - [23..30] bits, 8 bits
-        $exponent = ($bits >> 23) & 0xff;
-
-        // Fraction/mantissa/significand - [22..0] bits, 23 bits,
-        $fraction = $bits & 0x7fffff;
-
-        if (0 === $exponent) {
-            if ($fraction === 0) {
-                // $exponent === 0, $fraction === 0.
-                // We use 0.0 to have ability to return -0.0, the integer 0 does not work.
-                return $sign * 0.0;
-            }
-            // $exponent === 0, $fraction !== 0 => return denormalized number
-            return $sign * 2 ** (-126) * $fractionToFloat($fraction);
-        } elseif (255 === $exponent) {
-            if ($fraction !== 0) {
-                // $exponent === 255, $fraction !== 0.
-                return NAN;
-            }
-            // $exponent === 255, $fraction === 0.
-            return $sign * INF;
-        }
-
-        // $exponent is not either 0 or 255.
-        return $sign * 2 ** ($exponent - 127) * (1 + $fractionToFloat($fraction));
-    }
-
-    private function decodeDoublePrecisionFloat(int $bits): float {
-        $fractionToFloat = function (int $fraction): float {
-            $val = 0;
-            for ($i = 51, $j = 1; $i >= 0; $i--, $j++) {
-                $bit = ((1 << $i) & $fraction) >> $i;
-                $val += 2 ** (-$j) * $bit;
-            }
-            return $val;
-        };
-
-        // Sign - 63 bit, one bit
-        $sign = ($bits >> 63) == 0 ? 1 : -1;
-
-        // Exponent - [52..62] bits, 11 bits
-        $exponent = ($bits >> 52) & 0x7ff;
-
-        // Fraction/mantissa/significand - [51..0] bits, 52 bits,
-        $fraction = $bits & 0xfffffffffffff;
-
-        if (0 === $exponent) {
-            if ($fraction === 0) {
-                // $exponent === 0, $fraction === 0.
-                // We use 0.0 to have ability to return -0.0, the integer 0 does not work.
-                return $sign * 0.0;
-            }
-            // $exponent === 0, $fraction !== 0 => return denormalized number
-            return $sign * 2 ** (-1022) * $fractionToFloat($fraction);
-        } elseif (2047 === $exponent) {
-            if ($fraction !== 0) {
-                // $exponent === 2047, $fraction !== 0.
-                return NAN;
-            }
-            // $exponent === 2047, $fraction === 0.
-            return $sign * INF;
-        }
-
-        // $exponent is not either 0 or 2047.
-        return $sign * 2 ** ($exponent - 1023) * (1 + $fractionToFloat($fraction));
     }
 }
