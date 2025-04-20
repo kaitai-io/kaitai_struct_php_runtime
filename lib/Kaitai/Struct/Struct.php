@@ -6,7 +6,7 @@ abstract class Struct {
     protected $_parent;
     protected $_root;
 
-    public function __construct(Stream $io, Struct $parent = null, Struct $root = null) {
+    public function __construct(Stream $io, ?Struct $parent = null, ?Struct $root = null) {
         $this->_io = $io;
         $this->_parent = $parent;
         $this->_root = $root;
