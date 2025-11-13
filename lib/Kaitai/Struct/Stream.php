@@ -65,6 +65,7 @@ class Stream {
      * @TODO: if $pos (int) > PHP_INT_MAX it becomes float in PHP.
      */
     public function seek(int $pos)/*: void */ {
+        $this->alignToByte();
         $size = $this->size();
         if ($pos > $size) {
             throw new KaitaiError("The position ($pos) must be less than the size ($size) of the stream");
@@ -234,7 +235,7 @@ class Stream {
             // 8 bits => 1 byte
             // 9 bits => 2 bytes
             $bytesNeeded = (($bitsNeeded - 1) >> 3) + 1; // `ceil($bitsNeeded / 8)` (NB: `x >> 3` is `floor(x / 8)`)
-            $buf = $this->readBytes($bytesNeeded);
+            $buf = $this->readBytesNotAligned($bytesNeeded);
             for ($i = 0; $i < $bytesNeeded; $i++) {
                 $res = $res << 8 | ord($buf[$i]);
             }
@@ -270,7 +271,7 @@ class Stream {
             // 8 bits => 1 byte
             // 9 bits => 2 bytes
             $bytesNeeded = (($bitsNeeded - 1) >> 3) + 1; // `ceil($bitsNeeded / 8)` (NB: `x >> 3` is `floor(x / 8)`)
-            $buf = $this->readBytes($bytesNeeded);
+            $buf = $this->readBytesNotAligned($bytesNeeded);
             for ($i = 0; $i < $bytesNeeded; $i++) {
                 $res |= ord($buf[$i]) << ($i * 8);
             }
@@ -305,6 +306,11 @@ class Stream {
      **************************************************************************/
 
     public function readBytes(int $numberOfBytes): string {
+        $this->alignToByte();
+        return $this->readBytesNotAligned($numberOfBytes);
+    }
+
+    protected function readBytesNotAligned(int $numberOfBytes): string {
         // It is legitimate to ask for 0 bytes in Kaitai Struct API,
         // but PHP's fread() considers this an error, so check and
         // handle this case before calling fread()
@@ -320,10 +326,12 @@ class Stream {
     }
 
     public function readBytesFull(): string {
+        $this->alignToByte();
         return stream_get_contents($this->stream);
     }
 
     public function readBytesTerm($term, bool $includeTerm, bool $consumeTerm, bool $eosError): string {
+        $this->alignToByte();
         if (is_int($term)) {
             $term = chr($term);
         }
@@ -351,6 +359,7 @@ class Stream {
     }
 
     public function readBytesTermMulti(string $term, bool $includeTerm, bool $consumeTerm, bool $eosError): string {
+        $this->alignToByte();
         $unitSize = strlen($term);
 
         // PHP's fread() considers asking for 0 bytes an error, so check and
