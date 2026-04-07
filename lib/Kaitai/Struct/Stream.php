@@ -488,7 +488,7 @@ class Stream {
         $rotated = '';
         for ($i = 0, $n = strlen($bytes); $i < $n; $i++) {
             $byte = ord($bytes[$i]);
-            $rotated .= chr(($byte << $amount) | ($byte >> (8 - $amount)));
+            $rotated .= chr(($byte << $amount) & 0xff | ($byte >> (8 - $amount)));
         }
         return $rotated;
     }
