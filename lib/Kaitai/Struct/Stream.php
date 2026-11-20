@@ -516,6 +516,19 @@ class Stream {
         return $a - (int)floor($a / $b) * $b;
     }
 
+    /**
+     * Performs the logical (unsigned) right shift of `a` by `b` bits, i.e.
+     * fills the vacated most significant bits with zeros (unlike `>>`,
+     * which is an arithmetic shift).
+     *
+     * From https://stackoverflow.com/a/14428473, modified.
+     */
+    public static function zeroFillRightShift(int $a, int $b): int {
+        $res = $a >> $b;
+        if ($a >= 0 || $b === 0) return $res;
+        return $res & (PHP_INT_MAX >> ($b - 1));
+    }
+
     public static function byteArrayMin(string $b): int {
         $min = PHP_INT_MAX;
         for ($i = 0, $n = strlen($b); $i < $n; $i++) {
@@ -543,12 +556,5 @@ class Stream {
     private static function decodeSignedInt(int $x, int $mask): int {
         // See https://graphics.stanford.edu/~seander/bithacks.html#VariableSignExtend
         return ($x ^ $mask) - $mask;
-    }
-
-    // From https://stackoverflow.com/a/14428473, modified
-    private static function zeroFillRightShift(int $a, int $b): int {
-        $res = $a >> $b;
-        if ($a >= 0 || $b === 0) return $res;
-        return $res & (PHP_INT_MAX >> ($b - 1));
     }
 }
